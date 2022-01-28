@@ -1,0 +1,10 @@
+{
+  "appId": "com.lotery.terminal",
+  "appName": "lotery_terminal",
+  "bundledWebRuntime": false,
+  "npmClient": "npm",
+  "webDir": "www",
+  "server": {
+    "url": "http://192.168.56.1:8080"
+  }
+}

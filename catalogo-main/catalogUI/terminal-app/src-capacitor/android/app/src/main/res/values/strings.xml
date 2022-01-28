@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">lotery_terminal</string>
+    <string name="title_activity_main">lotery_terminal</string>
+    <string name="package_name">com.lotery.terminal</string>
+    <string name="custom_url_scheme">com.lotery.terminal</string>
+</resources>

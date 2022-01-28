@@ -1,0 +1,12 @@
+{
+  "name": "terminal-mobile-app",
+  "version": "0.0.1",
+  "description": "aplicacion para las terminales de venta de loteria",
+  "author": "joaquin reynoso",
+  "private": true,
+  "dependencies": {
+    "@capacitor/android": "^2.4.5",
+    "@capacitor/cli": "^2.0.0",
+    "@capacitor/core": "^2.0.0"
+  }
+}

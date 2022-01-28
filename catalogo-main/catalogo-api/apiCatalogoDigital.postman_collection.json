@@ -1,0 +1,652 @@
+{
+	"info": {
+		"_postman_id": "b018cef9-bebb-42ce-a89c-4b0a77e3fef4",
+		"name": "apiLotery",
+		"description": "Esta API pretende ser el centro del sistemas para bancas de loterias. ",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "BANCA",
+			"item": [
+				{
+					"name": "POS BANCA",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\"nombre_banca\": \"BANCA LA PRIMERA\",\n\"direccion\":\"C4 URB. TORIBIO \", \n\"emailbanca\":\"SINCORREO@SINCORREO.COM\",\n \"estadobanca\":\"1\" ,\n \"franquiciano\":\"23434331\",\n \"idconsorcio\":1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5001/api/banca",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"api",
+								"banca"
+							]
+						},
+						"description": "AL INSERTAR UNA BANCA NOTAR QUE SE DEBE EXISTIR UN CLIENTE, DEL CUAL SE REQUIERE EL CLIENTEID, y idconsorcio que deben existir previamente."
+					},
+					"response": []
+				},
+				{
+					"name": "GET BANCA",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\"nombre_banca\": \"BANCA LA PRIMERA\",\n\"direccion\":\"C4 URB. TORIBIO \", \n\"emailbanca\":\"SINCORREO@SINCORREO.COM\",\n \"estadobanca\":\"1\" ,\n \"franquiciano\":\"23434331\",\n \"nom_consorcio\": \"BANCAS LAS PODEROSAS\",\n  \"direccion_fisica\": \"CALLE M 5, SANTIAGO, CIUDAD\",\n  \"emailconsorcio\": \"bpoderosas@sincorreo.com\", \n  \"estadoconsorcio\":  \"1\",\n  \"clienteId\":1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5001/api/banca",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"api",
+								"banca"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "La banca es la entidad que posee un vendedor, terminales y parte de un consorcio. "
+		},
+		{
+			"name": "Cliente",
+			"item": [
+				{
+					"name": "POST CLIENTE",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nombres\": \"JUANA \",\n    \"apellidos\": \"TAVERAS PEREZ\",\n    \"cedula\": \"05601053290\",\n    \"estado\": \"1\",\n    \"correoe\": \"PJUANA@gmil.com\",\n    \"sexo\": \"M\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5001/api/cliente",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"api",
+								"cliente"
+							]
+						},
+						"description": "cuando creamos una persona de tipo cliente se utiliza este servicio. se pasan los datos indicados en el body."
+					},
+					"response": []
+				},
+				{
+					"name": "GET CLIENTE",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \n        \"nombres\": \"JUANA \",\n            \"apellidos\": \"TAVERAS PEREZ\",\n            \"cedula\": \"05601053293\",\n             \"estado\":\"1\",\n            \"correoe\":\"PJUANA@gmil.com\",\n            \"sexo\": \"M\"\n             \n           \n  \n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5001/api/cliente",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"api",
+								"cliente"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE CLIENTE",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \n        \"nombres\": \"JUANA \",\n            \"apellidos\": \"TAVERAS PEREZ\",\n            \"cedula\": \"05601053293\",\n             \"estado\":\"1\",\n            \"correoe\":\"PJUANA@gmil.com\",\n            \"sexo\": \"M\"\n             \n           \n  \n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5001/api/persona/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"api",
+								"persona",
+								"1"
+							]
+						},
+						"description": "eliminacion en cascada, si eliminas una persona que pertenece a un cliente y lo contrario. "
+					},
+					"response": []
+				}
+			],
+			"description": "El cliente es la entidad que poseera un consorcio. al pasar el body a este se inserta en la tabla persona y se crea el cliente con el registro del id y la cedula de la persona en dicha tabla cliente. "
+		},
+		{
+			"name": "Vendedor",
+			"item": [
+				{
+					"name": "POST VENDEDOR",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \n        \"nombres\": \"PEDRO JOSOSE\",\n            \"apellidos\": \"MENA HILARIO\",\n            \"cedula\": \"0560105890\",\n             \"estado\":\"1\",\n            \"correoe\":\"PJUANA@gmil.com\",\n            \"sexo\": \"M\"\n             \n           \n  \n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5001/api/vendedor",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"api",
+								"vendedor"
+							]
+						},
+						"description": "al igual que el cliente, el vendedor espera sus datos y los datos de la persona."
+					},
+					"response": []
+				},
+				{
+					"name": "GET VENDEDOR",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \n        \"nombres\": \"PEDRO JOSOSE\",\n            \"apellidos\": \"MENA HILARIO\",\n            \"cedula\": \"0560105890\",\n             \"estado\":\"1\",\n            \"correoe\":\"PJUANA@gmil.com\",\n            \"sexo\": \"M\"\n             \n           \n  \n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5001/api/vendedor",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"api",
+								"vendedor"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "El vendedor es quien emite tickets de jugadas en una terminal que pertenece a una banca. "
+		},
+		{
+			"name": "Jugada",
+			"item": [
+				{
+					"name": "POST JUGADA",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n \"idglobal\": \"2020020202abc34\", \n  \"iddetalle\": 1,\n   \"estado\":  1,    \n  \"idloteria\":1,\n  \"terminalId\":1,\n\"idjugada\":1,\n  \"monto\"  :20,\n  \"idjuego\" : 1 , \n  \"num1\" :1,\n  \"num2\" :23,\n  \"num3\" :0\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5001/api/jugada",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"api",
+								"jugada"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET JUGADA",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n \"idglobal\": \"2020020202abc34\", \n  \"iddetalle\": 1,\n   \"estado\":  1,    \n  \"idloteria\":1,\n  \"terminalId\":1,\n\"idjugada\":1,\n  \"monto\"  :20,\n  \"idjuego\" : 1 , \n  \"num1\" :1,\n  \"num2\" :23,\n  \"num3\" :0\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5001/api/jugada/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"api",
+								"jugada",
+								"2"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Terminal",
+			"item": [
+				{
+					"name": "POST TERMINAL",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n      \n     \"estado\":\"1\",\n     \"emei\":\"1134444445555\",\n     \"idbanca\": 2,\n     \"vendedorId\":1,\n     \"bancaId\":1 \n  }  ",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5001/api/terminal",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"api",
+								"terminal"
+							]
+						},
+						"description": "el emei del dispositivo es unico"
+					},
+					"response": []
+				},
+				{
+					"name": "GET TERMINAL",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n      \n     \"estado\":\"1\",\n     \"emei\":\"1134444445555\",\n     \"idbanca\": 1,\n     \"vendedorId\":1,\n     \"bancaId\":1 \n  }  ",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5001/api/terminal",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"api",
+								"terminal"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "la terminal posee informacion del dispositivo para realizar jugadas en bancas , y pertenece a un vendedor."
+		},
+		{
+			"name": "Persona",
+			"item": [
+				{
+					"name": "GET  PERSONA",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{        \n        \"nombres\": \"ROBIN \",\n            \"apellidos\": \"TAVERAS QUEZADA\",\n            \"cedula\": \"05601058970\",\n             \"estado\":\"1\",\n            \"correoe\":\"rafa@gmil.com\",\n            \"sexo\": \"M\" \n\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5001/api/persona",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"api",
+								"persona"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UPDATE PERSONA",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \n        \"nombres\": \"JUANA ANTONIA\",\n            \"apellidos\": \"TAVERAS PEREZ\",\n            \"cedula\": \"05601053293\",\n             \"estado\":\"1\",\n            \"correoe\":\"PJUANA@gmil.com\",\n            \"sexo\": \"M\"\n             \n           \n  \n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5001/api/persona/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"api",
+								"persona",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "La persona es el eje central para la creacion de clientes y  vendedores, mas adelante usuarios. "
+		},
+		{
+			"name": "Consorcio",
+			"item": [
+				{
+					"name": "POST CONSORCIO",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\"nom_consorcio\": \"BANCAS LAS PODEROSAS\",\n  \"direccion_fisica\": \"CALLE M 5, SANTIAGO, CIUDAD\",\n  \"emailconsorcio\": \"bpoderosas@sincorreo.com\", \n  \"estadoconsorcio\":  \"1\",\n  \"cedula\":\"056010532901\",\n  \"clienteId\":1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5001/api/consorcio",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"api",
+								"consorcio"
+							]
+						},
+						"description": "un consorcio puede tener multiples bancas y pertenece a un cliente. es requerido un clienteId"
+					},
+					"response": []
+				},
+				{
+					"name": "GET CONSORCIO",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\"nom_consorcio\": \"BANCAS LAS PODEROSAS\",\n  \"direccion_fisica\": \"CALLE M 5, SANTIAGO, CIUDAD\",\n  \"emailconsorcio\": \"bpoderosas@sincorreo.com\", \n  \"estadoconsorcio\":  \"1\",\n  \"cedula\":\"056010532901\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5001/api/consorcio",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"api",
+								"consorcio"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "El consorcio puede alojar varias bancas y se crea para un cliente existente. "
+		},
+		{
+			"name": "Direccion",
+			"item": [
+				{
+					"name": "POST DIRECCION",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n \n  \"provincia\": \"Duarte\",\n  \"seccion\" : \"Ciudad\",\n  \"municipio\": \"San Francisco de Macoris\",\n  \"calle\"  : \"primera\",\n  \"apartamento\" :\"2\",\n  \"longitud\" :\"556432343\",\n  \"latitud\":\"-7098909909890\" ,\n  \"personaId\":\"1\"\n  \n\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5001/api/direccion",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"api",
+								"direccion"
+							]
+						},
+						"description": "un consorcio puede tener multiples bancas y pertenece a un cliente. es requerido un clienteId"
+					},
+					"response": []
+				},
+				{
+					"name": "GET DIRECCION",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n \n  \"provincia\": \"Duarte\",\n  \"seccion\" : \"Ciudad\",\n  \"municipio\": \"San Francisco de Macoris\",\n  \"calle\"  : \"primera\",\n  \"apartamento\" :\"2\",\n  \"longitud\" :\"556432343\",\n  \"latitud\":\"-7098909909890\" ,\n  \"personaId\":\"1\"\n  \n\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5001/api/direccion",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"api",
+								"direccion"
+							]
+						},
+						"description": "un consorcio puede tener multiples bancas y pertenece a un cliente. es requerido un clienteId"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Telefono",
+			"item": [
+				{
+					"name": "POST TELEFONO",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"numero\": \"8095555555\",\n    \"tipo\": \"celular\",\n    \"compania\": \"claro\",\n    \"personaId\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5001/api/telefono",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"api",
+								"telefono"
+							]
+						},
+						"description": "un consorcio puede tener multiples bancas y pertenece a un cliente. es requerido un clienteId"
+					},
+					"response": []
+				},
+				{
+					"name": "GET TELEFONO",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n \n  \"provincia\": \"Duarte\",\n  \"seccion\" : \"Ciudad\",\n  \"municipio\": \"San Francisco de Macoris\",\n  \"calle\"  : \"primera\",\n  \"apartamento\" :\"2\",\n  \"longitud\" :\"556432343\",\n  \"latitud\":\"-7098909909890\" ,\n  \"personaId\":\"1\"\n  \n\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5001/api/telefono",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"api",
+								"telefono"
+							]
+						},
+						"description": "un consorcio puede tener multiples bancas y pertenece a un cliente. es requerido un clienteId"
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
