@@ -12,7 +12,7 @@ const tipoContacto = sequelize.define('tipoContacto', {
     allowNull: false,
   }
  
-});
+},{timestamps:false});
 
 
 export default tipoContacto;

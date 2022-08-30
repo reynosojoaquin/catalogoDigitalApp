@@ -21,7 +21,7 @@ const Telefono = sequelize.define('telefono', {
   },
 
 
-}, {});
+}, {timestamps:false});
 Persona.hasMany(Telefono,{foreingKey:'persona_id'});
 Telefono.belongsTo(Persona); 
 tipoTelefono.hasMany(Telefono,{foreignKey:'tipo_id'});

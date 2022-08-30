@@ -28,9 +28,9 @@ app.use(cors({
 
 const swaggerDefinition = {
   info: {
-    title: 'Lotery 2.0',
+    title: 'Catalogo digital',
     version: '1.0.0',
-    description: 'Sistema para la administracion de consorcios de loteria'
+    description: 'Sistema para la preventa y facturacion de productos fuera de una tienda'
   }
 };
 
@@ -39,12 +39,10 @@ const options = {
   swaggerDefinition,
   // Paths to files containing endpoints definitions
   apis: ['./src/routes/Cliente.js','./src/routes/Contacto.js',
-         './src/routes/Banca.js','./src/routes/Consorcio.js'
-  ,'./src/routes/DestalleJugada.js','./src/routes/Direccion.js'
-  ,'./src/routes/InventarioBanca.js' ,'./src/routes/InventarioTerminal.js',
-  './src/routes/Jugada.js','./src/routes/Loteria.js','./src/routes/Permiso',
+         './src/routes/Banca.js','./src/routes/Direccion.js',
+  './src/routes/Permiso',
   './src/routes/Persona.js', './src/routes/Rol.js','./src/routes/Telefono.js',
-  './src/routes/Terminal.js','./src/routes/TipoJuego.js',    
+  './src/routes/Terminal.js',   
   './src/routes/Usuario.js','./src/routes/Vendedor.js','./src/models/Cliente.js'      
 
 ],

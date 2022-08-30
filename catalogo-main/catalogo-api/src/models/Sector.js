@@ -11,7 +11,7 @@ const sector = sequelize.define('sector', {
     type: Sequelize.TEXT,
     allowNull: false  }
 
-}, {});
+}, {timestamps:false});
 
 sector.belongsTo(Ciudad,{foreignKey:'ciudad_id'});
 export default sector;

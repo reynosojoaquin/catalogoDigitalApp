@@ -7,24 +7,34 @@ import Direccion from '../models/Direccion';
 class PersonaService {
   static async create(newPersona) {
     try {
-
-      if (validateCedula(newPersona.cedula)) {
-        const entityCreated = await Persona.create(newPersona);
-         
-        const bulkTelefonos = newPersona.telefonos.map(telefono => {
-          return { ...telefono, personaId: entityCreated.id };
-        }); Telefono.bulkCreate(bulkTelefonos);
-
-
-        const bulkDirecciones = newPersona.direcciones.map(direccion => {
-          return { ...direccion, personaId: entityCreated.id };
+      console.log(newPersona.cliente.telefonos);
+      if (validateCedula(newPersona.cliente.cedula)) {
+        const entityCreated = await Persona.create(newPersona.cliente);
+        
+        const bulkTelefonos = newPersona.cliente.telefonos.map(telefono => {
+          return { ...telefono, persona_id: entityCreated.id };
+        }); 
+        Telefono.bulkCreate(bulkTelefonos);
+          const bulkDirecciones = newPersona.cliente.direcciones.map(direccion => {
+          return { ...direccion, persona_id: entityCreated.id };
         });
+        
         Direccion.bulkCreate(bulkDirecciones);
 
-        const bulkContactos = newPersona.contactos.map(contacto => {
-          return { ...contacto, personaId: entityCreated.id };
-        });
+        const bulkContactos = newPersona.cliente.contactos.map(contacto => {
+          return { ...contacto, persona_id: entityCreated.id };
+        });       
         Contacto.bulkCreate(bulkContactos);
+        
+        
+        console.log('comparativa contactos');
+        console.log(newPersona.cliente.contactos);
+        console.log('fin compartiva contactos');
+        console.log(bulkContactos);
+
+
+        
+
         return entityCreated;
       } else   throw {name: 'validation error', message: 'Cédula no válida!'};
      

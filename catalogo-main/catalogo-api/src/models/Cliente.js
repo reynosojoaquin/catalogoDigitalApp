@@ -58,7 +58,7 @@ const Cliente = sequelize.define('cliente', {
     autoIncrement: true  
   } 
    
-}, {});
+}, {timestamps:false});
 Persona.hasOne(Cliente,{ onDelete: 'cascade' },{ onUpdate: 'cascade' });
 Cliente.belongsTo(Persona,{ onDelete: 'cascade' },{ onUpdate: 'cascade' }); 
  

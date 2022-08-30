@@ -4,7 +4,7 @@ class TipoTelefonoService {
 
   static async create(newTipoTelefono) {
     try {
-      const entityCreated = await TipoTelefono.create(newTipoTelefono);
+      const entityCreated = await TipoTelefono.bulkCreate(newTipoTelefono);
       return entityCreated;
     } catch (error) {
       throw error;

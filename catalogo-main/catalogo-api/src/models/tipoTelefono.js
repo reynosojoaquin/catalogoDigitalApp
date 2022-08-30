@@ -12,7 +12,7 @@ const tipoTelefono = sequelize.define('tipoTelefono', {
     allowNull: false,
   }
  
-});
+},{timestamps:false});
 
 
 export default tipoTelefono;

@@ -12,7 +12,7 @@ const tipoDireccion = sequelize.define('tipoDireccione', {
     allowNull: false,
   }
  
-});
+},{timestamps:false});
 
 
 export default tipoDireccion;

@@ -7,9 +7,9 @@ class ProvinciaController {
   static async create(req, res) {
     let newProvincia= req.body;
     try {      
-      console.log(JSON.stringify(newProvincia));           
+        
      const provinciaEntidad = await ProvinciaService.create(newProvincia);          
-      return res.json(Response.get('provincia created', provinciaEntidad));      
+      return res.json(Response.get('provincia creada', provinciaEntidad));      
       
     } catch (error) {
        
@@ -58,13 +58,13 @@ class ProvinciaController {
   static async update(req, res) {
     const { id } = req.params;
     const provincia = req.body;
-
+     
     try {
+      
       const updateProvincia = await ProvinciaService.update(id, provincia);
-
       return res.json(Response.get('Provincia actualizada', updateProvincia));
     } catch (error) {
-      return res.json(Response.get('Se ha producido un error actualizando la provincia', error, 500));
+      return res.json(Response.get('Se ha producido un error actualizando la provincia'+error, error, 500));
     }
   }
 

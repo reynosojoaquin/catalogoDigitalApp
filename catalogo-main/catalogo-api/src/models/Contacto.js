@@ -30,7 +30,8 @@ const Contacto = sequelize.define('contacto', {
     type: Sequelize.TEXT,
     allowNull: true,
   }
-}, {});
+}, {timestamps:false});
+
 Persona.hasMany(Contacto,{ foreignKey:'persona_id'});
 Contacto.belongsTo(Persona);
 tipoContacto.hasMany(Contacto,{foreignKey:'tipo_id'});

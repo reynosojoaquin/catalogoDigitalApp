@@ -11,9 +11,9 @@ class CiudadService {
     }
   }
 
-  static async update(id, ciudad) {
+  static async update(id,nombre) {
     try {
-      await Ciudad.update(ciudad, { where: { id: id } });
+      await Ciudad.update(nombre, { where: { id: id } });
       return await this.getById(id);
     } catch (error) {
       throw error;
@@ -34,7 +34,7 @@ class CiudadService {
   static async getById(id) {
 
     try {
-      const ciudad = await ciudad.findOne({ where: { id } });
+      const ciudad = await Ciudad.findOne({ where: { id:id } });
       return ciudad;
     } catch (error) {
       throw error;
@@ -44,7 +44,7 @@ class CiudadService {
   static async delete(id) {
     try {
       const rowCount = await Ciudad.destroy({
-        where: { id }
+        where: { id:id }
       });
       return { count: rowCount };
     } catch (error) {

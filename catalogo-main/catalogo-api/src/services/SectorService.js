@@ -13,7 +13,7 @@ class SectorService {
 
   static async update(id, sector) {
     try {
-      await sector.update(Sector, { where: { id: id } });
+      await Sector.update(sector, { where: { id: id } });
       return await this.getById(id);
     } catch (error) {
       throw error;

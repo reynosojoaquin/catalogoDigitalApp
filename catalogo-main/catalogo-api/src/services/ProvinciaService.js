@@ -4,17 +4,17 @@ class ProvinciaService {
 
   static async create(newProvincia) {
     try {
-   
        const ProvinciaCreated = await  Provincia.bulkCreate(newProvincia);
+       console.log(ProvinciaCreated);
       return ProvinciaCreated;
     } catch (error) {
       throw error;
     }
   }
 
-  static async update(id, Provincia) {
+  static async update(id, nombre) {
     try {
-      await Provincia.update(Provincia, { where: { id: id } });
+      await Provincia.update(nombre, { where: { id: id } });
       return await this.getById(id);
     } catch (error) {
       throw error;

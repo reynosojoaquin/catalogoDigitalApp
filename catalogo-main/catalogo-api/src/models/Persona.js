@@ -1,5 +1,6 @@
 import Sequelize from 'sequelize';
 import { sequelize } from '../database/database';
+
  
 
 const Persona = sequelize.define('persona', {
@@ -25,8 +26,8 @@ const Persona = sequelize.define('persona', {
     allowNull: false
      
   },
-  estado: {
-    type: Sequelize.TEXT,
+  activo: {
+    type: Sequelize.BOOLEAN,
     allowNull: true
   },
   correo: {
@@ -44,7 +45,8 @@ const Persona = sequelize.define('persona', {
   }
 
 }, {
-  freezeTableName: true
+  freezeTableName: true,
+  timestamps:false
 });
 
 

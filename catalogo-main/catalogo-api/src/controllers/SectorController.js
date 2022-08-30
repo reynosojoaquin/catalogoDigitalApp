@@ -60,6 +60,7 @@ class SectorController {
     const sector = req.body;
 
     try {
+      console.log(id);
       const updatesector = await SectorService.update(id, sector);
 
       return res.json(Response.get('sector actualizada', updatesector));

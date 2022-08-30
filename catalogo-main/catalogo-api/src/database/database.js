@@ -17,7 +17,7 @@ export const sequelize = new Sequelize(
       required: 30000,
       idle: 10000
     },
-    logging: false,
+    logging: console.log,
     define: {
       underscored: true,
       timestamps: true

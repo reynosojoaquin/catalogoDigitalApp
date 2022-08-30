@@ -57,14 +57,14 @@ class CiudadController {
 
   static async update(req, res) {
     const { id } = req.params;
-    const ciudad = req.body;
+    const name = req.body;
 
     try {
-      const updateciudad = await CiudadService.update(id, ciudad);
+      const updateciudad = await CiudadService.update(id, name);
 
       return res.json(Response.get('ciudad actualizada', updateciudad));
     } catch (error) {
-      return res.json(Response.get('Se ha producido un error actualizando la ciudad', error, 500));
+      return res.json(Response.get('Se ha producido un error actualizando la ciudad'+error, error, 500));
     }
   }
 

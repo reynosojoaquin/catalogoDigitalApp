@@ -7,12 +7,13 @@ class ClienteController {
 
   static async create(req, res) {
     const newBody = req.body;
+    var persona_id = 0;
     try {
+    
       const entityPersonaCreate = await PersonaService.create(newBody);
-      newBody.personaId = entityPersonaCreate.id;
-
-
-      const newCliente = await ClienteService.create(newBody);
+      persona_id = entityPersonaCreate.id;
+      console.log(persona_id);
+      const newCliente = await ClienteService.create({persona_id :persona_id});
       return res.json(Response.get('Cliente creado', newCliente));
 
     } catch (error) {

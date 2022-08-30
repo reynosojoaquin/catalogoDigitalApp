@@ -8,9 +8,9 @@ const provincia = sequelize.define('provincia', {
   },
    Nombre: {
     type: Sequelize.TEXT,
-    allowNull: false  }
-
-}, {});
+    allowNull: false},
+},
+ {timestamps:false});
 
 
 export default provincia;

@@ -6,10 +6,10 @@ import Direccion from '../models/Direccion';
 class ClienteService {
  
 
-  static async create(newCliente) {
+  static async create(persona) {
     try {
-      const entityCreated = await Cliente.create(newCliente);
-
+      console.log(persona);
+      const entityCreated = await Cliente.create(persona);
       return await this.getById(entityCreated.id);
     } catch (error) {
       throw error;

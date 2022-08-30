@@ -46,7 +46,7 @@ const Direccion = sequelize.define('direccione', {
   },
 
 
-}, {});
+}, {timestamps:false});
 Persona.hasMany(Direccion,{foreignKey:'persona_id'});
 Direccion.belongsTo(Persona);
 tipoDireccion.hasMany(Direccion,{foreignKey:'tipo_id'});
