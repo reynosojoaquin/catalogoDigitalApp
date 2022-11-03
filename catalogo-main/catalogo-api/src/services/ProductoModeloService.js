@@ -1,19 +1,19 @@
-import Usuario from '../models/Usuario';
+import Modelo from '../models/productoModelo';
 
-class UsuarioService {
+class ProductoModeloService {
 
-  static async create(newUsuario) {
+  static async create(newModelo) {
     try {
-      const entityCreated = await Usuario.create(newUsuario);
-      return entityCreated;
+        const modeloCreated = await Modelo.bulkCreate(newModelo);
+      return modeloCreated;
     } catch (error) {
       throw error;
     }
   }
 
-  static async update(id, usuario) {
+  static async update(id,nombre) {
     try {
-      await Usuario.update(usuario, { where: { id: id } });
+      await Modelo.update(nombre, { where: { id: id } });
       return await this.getById(id);
     } catch (error) {
       throw error;
@@ -24,7 +24,7 @@ class UsuarioService {
     const { criterions } = params;
 
     try {
-      const { rows } = await Usuario.findAndCountAll({ ...criterions });
+      const { rows } = await Modelo.findAndCountAll({ ...criterions });
       return { rows, count: rows.length };
     } catch (error) {
       throw error;
@@ -34,8 +34,8 @@ class UsuarioService {
   static async getById(id) {
 
     try {
-      const usuario = await Usuario.findOne({ where: { id } });
-      return usuario;
+      const ciudad = await Modelo.findOne({ where: { id:id } });
+      return ciudad;
     } catch (error) {
       throw error;
     }
@@ -43,8 +43,8 @@ class UsuarioService {
 
   static async delete(id) {
     try {
-      const rowCount = await Usuario.destroy({
-        where: { id }
+      const rowCount = await Modelo.destroy({
+        where: { id:id }
       });
       return { count: rowCount };
     } catch (error) {
@@ -54,4 +54,4 @@ class UsuarioService {
 
 }
 
-export default UsuarioService;
+export default ProductoModeloService;

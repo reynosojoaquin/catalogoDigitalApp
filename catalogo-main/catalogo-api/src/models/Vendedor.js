@@ -9,14 +9,12 @@ const Vendedor = sequelize.define('vendedor', {
     autoIncrement: true,
     foreignKey: true
   },
-  estado: {
-    type: Sequelize.TEXT, // se ha contemplado 0 y 1 para activo o no 
-    allowNull: false
-  },
-  cedula: {
-    type: Sequelize.TEXT,
-    allowNull: false
+   persona_id: {
+    type: Sequelize.INTEGER,
+    allowNull: true,
+    primaryKey:true    
   }
+  
 }, {
   freezeTableName: true
 });

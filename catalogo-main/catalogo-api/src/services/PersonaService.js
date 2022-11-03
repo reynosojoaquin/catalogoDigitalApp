@@ -7,56 +7,43 @@ import Direccion from '../models/Direccion';
 class PersonaService {
   static async create(newPersona) {
     try {
-      console.log(newPersona.cliente.telefonos);
-      if (validateCedula(newPersona.cliente.cedula)) {
-        const entityCreated = await Persona.create(newPersona.cliente);
-        
-        const bulkTelefonos = newPersona.cliente.telefonos.map(telefono => {
+      
+      if (validateCedula(newPersona.persona.cedula)) {
+        const entityCreated = await Persona.create(newPersona.persona);
+        console.log('DATOS DE LA PERSONA CREADA');
+        console.log(entityCreated);
+        const bulkTelefonos = newPersona.persona.telefonos.map(telefono => {
           return { ...telefono, persona_id: entityCreated.id };
         }); 
         Telefono.bulkCreate(bulkTelefonos);
-          const bulkDirecciones = newPersona.cliente.direcciones.map(direccion => {
+          const bulkDirecciones = newPersona.persona.direcciones.map(direccion => {
           return { ...direccion, persona_id: entityCreated.id };
         });
-        
         Direccion.bulkCreate(bulkDirecciones);
-
-        const bulkContactos = newPersona.cliente.contactos.map(contacto => {
+        const bulkContactos = newPersona.persona.contactos.map(contacto => {
           return { ...contacto, persona_id: entityCreated.id };
         });       
         Contacto.bulkCreate(bulkContactos);
-        
-        
-        console.log('comparativa contactos');
-        console.log(newPersona.cliente.contactos);
-        console.log('fin compartiva contactos');
-        console.log(bulkContactos);
-
-
-        
-
         return entityCreated;
-      } else   throw {name: 'validation error', message: 'Cédula no válida!'};
-     
 
-    } catch (error) {
+      } else   throw {name: 'validation error', message: 'Cédula no válida!'};
+         } catch (error) {
       throw error;
     }
-
-
   }
 
   static async update(persona,res) {
     try {
       console.log(JSON.stringify(persona));
-      let personaId = persona.id;
-      
+       let personaId = persona.persona.persona_id;
+
       
         await Telefono.destroy({
             where:{
                personaId
             }            
         });
+ 
         await Direccion.destroy({
              where:{
                personaId
@@ -67,28 +54,34 @@ class PersonaService {
               personaId
               }
         });
-       console.log(JSON.stringify(personaId));
-      const bulkUpdateTelefonos = persona.telefonos.map(telefono => {
+
+       // ACTUALIZANDO TELEFONOS
+
+       const bulkUpdateTelefonos = persona.personaId.telefonos.map(telefono => {
         return { ...telefono, persona_id: personaId };
       }); Telefono.bulkCreate(bulkUpdateTelefonos);
 
      
-      const bulkUpdateDirecciones = persona.direcciones.map(direccion => {
+      //ACTUALIZANDO DIRECCIONES
+
+      const bulkUpdateDirecciones = persona.persona.direcciones.map(direccion => {
         return { ...direccion, persona_id: personaId };
       });
-
       Direccion.bulkCreate(bulkUpdateDirecciones);
 
-      const bulkUpdateContactos = persona.contactos.map(contacto => {
+      // ACTUALIZANDO CONTACTOS
+      const bulkUpdateContactos = persona.persona.contactos.map(contacto => {
         return { ...contacto, persona_id: personaId };
       });
       Contacto.bulkCreate(bulkUpdateContactos);
 
-      await Persona.update(persona, { where: { id: personaId } });
+      
+      await Persona.update(persona.persona, { where: { id: personaId } });
+     
       return await this.getById(personaId);
     } catch (error) {
       res.status(500).json({
-        message: 'Something goes wrong with cliente update: ' + error,
+        message: 'Error actualizando la persona, update: ' + error,
         data: error
       });
     }
@@ -117,6 +110,7 @@ class PersonaService {
 
   static async delete(id) {
     try {
+       
       const rowCount = await Persona.destroy({
         where: { id }
       });

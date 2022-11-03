@@ -2,14 +2,28 @@ import Sequelize from 'sequelize';
 import { sequelize } from '../database/database';
 
 const pedidoDetalle = sequelize.define('PedidoDetalle', {
-  id: {
+  indice: {
     type: Sequelize.INTEGER,
     primaryKey: true,
     autoIncrement: true
   },
-   Nombre: {
-    type: Sequelize.TEXT,
-    allowNull: false  }
+   producto_id: {
+    type: Sequelize.INTEGER,
+    allowNull: false  },
+    pedido_id: {
+      type: Sequelize.INTEGER,
+      allowNull: false  },
+    cantidad:{
+      type: Sequelize.DECIMAL,
+      allowNull: false
+    },
+    total:{
+      type: Sequelize.DECIMAL,
+      allowNull:false
+    }
+
+
+
 
 }, {});
 

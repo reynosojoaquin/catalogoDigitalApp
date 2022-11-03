@@ -37,5 +37,4 @@ Contacto.belongsTo(Persona);
 tipoContacto.hasMany(Contacto,{foreignKey:'tipo_id'});
 Contacto.belongsTo(tipoContacto,{foreignKey:'tipo_id'});  
 
-
 export default Contacto;

@@ -1,4 +1,4 @@
-import UsuarioService from '../service/UsuarioService';
+import UsuarioService from '../services/UsuarioService';
 import Response from '../utils/response';
 import querystringConverterHelper from '../utils/querystringConverterHelper';
 import sequelize from 'sequelize';

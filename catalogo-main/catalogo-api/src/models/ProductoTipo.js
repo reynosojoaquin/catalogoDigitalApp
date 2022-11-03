@@ -1,18 +1,21 @@
 import Sequelize from 'sequelize';
 import { sequelize } from '../database/database';
+import producto from '../models/Producto';
 
-
-const Modelo = sequelize.define('Modelo', {
+const ProductoTipo = sequelize.define('ProductoTipo', {
   id: {
     type: Sequelize.INTEGER,
     primaryKey: true,
     autoIncrement: true
   },
-   Nombre: {
+   nombre: {
     type: Sequelize.TEXT,
     allowNull: false  }
 
-}, {});
+}, {
+  timestamps:false
+});
 
+ProductoTipo.hasMany(producto,{foreignKey:'tipo_id'}); 
 
-export default Modelo;
+export default ProductoTipo;

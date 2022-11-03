@@ -56,10 +56,15 @@ const Cliente = sequelize.define('cliente', {
     type: Sequelize.INTEGER, 
     primaryKey: true ,
     autoIncrement: true  
-  } 
+  } , persona_id: {
+    type: Sequelize.INTEGER,
+    allowNull: true,
+    primaryKey:true    
+  },
+
    
 }, {timestamps:false});
-Persona.hasOne(Cliente,{ onDelete: 'cascade' },{ onUpdate: 'cascade' });
-Cliente.belongsTo(Persona,{ onDelete: 'cascade' },{ onUpdate: 'cascade' }); 
+Persona.hasOne(Cliente);
+Cliente.belongsTo(Persona,{ onDelete: 'cascade' },{ onUpdate: 'cascade' },{foreingKey:'persona_id'}); 
  
 export default Cliente;

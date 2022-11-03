@@ -1,5 +1,5 @@
 import {Router} from 'express';
-import permisoController from '../controllers/PermisoController';
+import pedidoDetalleController from '../controllers/PedidoDetalleController';
 
 const router = Router();
 /**
@@ -46,10 +46,10 @@ const router = Router();
 
 
 
-router.get('/', permisoController.getAll );
-router.get('/:id', permisoController.getById );
-router.put('/:id', permisoController.update );
-router.post('/', permisoController.create );
-router.delete('/:id', permisoController.delete);
+router.get('/', pedidoDetalleController.getAll );
+router.get('/:id', pedidoDetalleController.getById );
+router.put('/:id', pedidoDetalleController.update );
+router.post('/', pedidoDetalleController.create );
+router.delete('/:id', pedidoDetalleController.delete);
 
 export default router;

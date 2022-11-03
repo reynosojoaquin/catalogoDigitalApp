@@ -8,9 +8,28 @@ const Pedido = sequelize.define('pedido', {
     primaryKey: true,
     autoIncrement: true
   },
-   Nombre: {
-    type: Sequelize.TEXT,
-    allowNull: false  }
+   fecha: {
+    type: Sequelize.DATE,
+    allowNull: false  },
+   status:{
+    type:Sequelize.TEXT,
+    allowNull:false
+   },
+   total:{
+    type:Sequelize.DECIMAL,
+    allowNull:true
+   },
+   clienteID:{
+      type:  Sequelize.INTEGER,
+      allowNull:false
+   },
+   vendedorID:{
+    type:Sequelize.INTEGER,
+    allowNull:false
+   },
+   activo:{
+    type:Sequelize.BOOLEAN
+   }
 
 }, {});
 

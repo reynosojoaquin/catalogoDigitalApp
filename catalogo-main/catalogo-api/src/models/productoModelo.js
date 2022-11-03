@@ -1,18 +1,18 @@
 import Sequelize from 'sequelize';
 import { sequelize } from '../database/database';
-import provincia from './provincia';
+import producto from './Producto';
 
-const Ciudad = sequelize.define('Ciudades', {
+const Modelo = sequelize.define('modelo', {
   id: {
     type: Sequelize.INTEGER,
     primaryKey: true,
     autoIncrement: true
   },
-   Nombre: {
+   nombre: {
     type: Sequelize.TEXT,
     allowNull: false  }
 
-}, {});
+}, {timestamps:false});
 
-Ciudad.belongsTo(provincia,{foreignKey:'provincia_id'});
-export default Ciudad;
+Modelo.hasMany(producto,{foreignKey:'modelo_id'});
+export default Modelo;

@@ -6,12 +6,19 @@ import direccion from '../models/Direccion';
 
 
 */
+import cliente from '../services/ClienteService';
 import provincia from '../services/ProvinciaService';
 import ciudad from '../services/CiudadService';
 import sector from '../services/SectorService';
 import tipoContacto from '../models/tipoContacto';
 import tipoDireccion from '../models/tipoDireccion';
 import tipoTelefono from '../models/tipoTelefono';
+import productoMarca from '../models/productoMarca';
+import productoModelo from '../models/productoModelo';
+import productoTipo from '../models/ProductoTipo';
+import productoUnidadMedida from '../models/UnidadMedida';
+import producto from '../models/Producto';
+import vendedor from '../services/VendedorService';
 // Import model only for setup the initial data
 import { sequelize } from './database';
 
@@ -27,6 +34,10 @@ const testData = () => {
 
             if(TEST_DATA==='true'){
                 console.log('Registrando data de prueba');
+
+                // registrando cliente de ejemplo
+
+
                 //PROVINCIAS
                 let provincia_data =   [
                     {Nombre:'Santiago'},
@@ -115,105 +126,159 @@ const testData = () => {
            await tipoTelefono.bulkCreate(tipos_tlefonos);
           // FIN DE L REGISTRO DEL TIPO TELEFONO  
 
+         // REGISTRANDO TIPO PROUDCTOS
 
+         let tipos_productos =[
+            {nombre:'Teclados'},
+            {nombre:'Bocinas'},
+            {nombre:'Laptops'},
+            {nombre:'Desktop'}
+         ];
+            
+         await productoTipo.bulkCreate(tipos_productos);
+
+         // FIN DEL REGISTRO DE LOS TIPOS DE  PRODUCTOS
+
+         // REGISTRANDO LAS MARCAS DE LOS PROUCTOS
+
+         let marcas_productos =[
+            {nombre:'Sony'},
+            {nombre:'Apple'},
+            {nombre:'Logitech'}
+         ];
+         await productoMarca.bulkCreate(marcas_productos);
+
+         // FIN DEL REGISTRO DE LOS PRODUCTOS
+
+         // REGISTRO DE MODELOS PRODUCTOS
+
+         let Modelos =[
+              {nombre:'TEC089',marca_id:1},
+              {nombre:'TEC486',marca_id:1},
+              {nombre:'a1314',marca_id:2}  
+         ];
+          await productoModelo.bulkCreate(Modelos);
 
 
             }
-            
 
 
+        // Registrando las unidades de medida
 
+        let unidades_medida = [
+            {nombre:'Unidad'},
+            {nombre:'cajas'},
+            {nombre:'libras'}
+        ];
+            console.log(unidades_medida);
+        await productoUnidadMedida.bulkCreate(unidades_medida);
 
+              
+            var objClient = {};
+            objClient = {'persona':{
+                    'nombres': 'JUANA ANTONIA',
+                     'apellidos': 'TAVERAS PEREZ',
+                     'cedula': '05601098345',
+                     'activo': true,
+                     'correo':'PJUANA@gmil.com',
+                     'sexo': 'M',
+                     'url' : '',
+                     'persona_id':0,
+                     'telefonos':[{
+                         'numero':'8095883613',
+                         'persona_id':0,
+                         'tipo_id':'1'
+                     }],
+                     'direcciones':[{
+                         'calle':'L',
+                         'numero':'76',
+                         'apartamento':'',
+                         'longitud':'000000000',
+                         'latitude':'111111111',
+                         'persona_id':0,
+                         'tipo_id':'1',
+                         'provincia_id': '1',
+                         'ciudad_id':'1',
+                         'sector_id':'1'
+                     }],
+                     'contactos':[{
+                         'nombre':'chamel',
+                         'apellido':'reynoso',
+                         'telefono':'8098891264',
+                         'direccion':'calle l 76',
+                         'persona_id':0,
+                         'tipo_id':'1'
+                     }]
+           
+         }
+        };
+         await cliente.create(objClient);
 
+         let productos = [
+            {
+                nombre: 'Teclado USB',
+                codigoInterno : 1,
+                codigoBarras: '0000000000000000000', 
+                activo:  true,
+                descripcion: 'producto generico de prueba',
+                exento:true,
+                imgUrl: '/images/',
+                reorden: 5,
+                marca_id: 1,
+                modelo_id:1,
+                tipo_id: 1,
+                unidad_id:1
+              }    ];
 
-
-               /*CIUDADES*/
-
-    
-            
-
+          await producto.bulkCreate(productos);
+          var objVendendor ={};
+          objVendendor = {'persona':{
+            'nombres': 'Jhon',
+             'apellidos': 'snow',
+             'cedula': '05500014500',
+             'activo': true,
+             'correo':'PJUANA@gmil.com',
+             'sexo': 'M',
+             'url' : '',
+             'persona_id':0,
+             'telefonos':[{
+                 'numero':'8095883613',
+                 'persona_id':0,
+                 'tipo_id':'1'
+             }],
+             'direcciones':[{
+                 'calle':'L',
+                 'numero':'76',
+                 'apartamento':'',
+                 'longitud':'000000000',
+                 'latitude':'111111111',
+                 'persona_id':0,
+                 'tipo_id':'1',
+                 'provincia_id': '1',
+                 'ciudad_id':'1',
+                 'sector_id':'1'
+             }],
+             'contactos':[{
+                 'nombre':'chamel',
+                 'apellido':'reynoso',
+                 'telefono':'8098891264',
+                 'direccion':'calle l 76',
+                 'persona_id':0,
+                 'tipo_id':'1'
+             }]
+   
+             }
+            };
+        await vendedor.create(objVendendor);
             console.log('sincronisacion completa');
 
 
-            /*console.log('INSERTANDO DATOS DE EJEMPLO');
-            if (process.env.INSERTTESTDATA == 'true') {
-                // Put here all yout inserts (create)
-                await persona.create({
-                    nombres: 'RAFAEL ',
-                    apellidos: 'TAVERAS',
-                    cedula: '05601053290',
-                    estado: '1',
-                    correoe: 'taveras@gmil.com',
-                    sexo: 'M'
-                }
-                );
-                 await cliente.create({
-                    personaId: '1'
-                });
-
-                   await persona.create(
-                {
-                    nombres: 'JOAQUIN',
-                    apellidos: 'REYNOSO',
-                    cedula: '056109834',
-                    estado: '1',
-                    correoe: 'REYNOSOJOAQUIN@gmil.com',
-                    sexo: 'M'
-                }
-                );
-                await cliente.create({
-                    personaId: '2'
-                });
-
-                
-               // FIN DEL REGISTRO DE TIPO DE DIRECCION
-
-                await direccion.create({
-                    'provincia': 'Duarte',
-                    'seccion': 'Ciudad',
-                    'municipio': 'San Francisco de Macoris',
-                    'calle': 'primera',
-                    'apartamento': '2',
-                    'longitud': '556432343',
-                    'latitud': '-7098909909890',
-                    'personaId': '1',
-                    numero:20,
-                    tipo_id:1,
-                    provincia_id:1,
-                    ciudad_id:1,
-                    sector_id:1,
-                });
-
-           
-
-                await telefono.create({
-
-                    'numero': '8095555555',
-                    tipo_id: 1,
-                    personaId: 1
-                });
-                 await telefono.create({
-                    numero: '8296417220',
-                    tipo_id: 1,
-                    personaId: 2
-                });
-
-
-
-            }
-             console.log('DATOS DE EJEMPLO INSETADOS CORRECTAMENTE');
-             */
+          
         })
         .catch(error => {
             console.log(error);
 
         });
-
-
-
-
-
-
 
 
 

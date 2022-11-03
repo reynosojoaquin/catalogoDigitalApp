@@ -1,19 +1,13 @@
 import ClienteService from '../services/ClienteService';
 import Response from '../utils/response';
 import querystringConverterHelper from '../utils/querystringConverterHelper';
-import PersonaService from '../services/PersonaService';
-class ClienteController {
 
+class ClienteController {
 
   static async create(req, res) {
     const newBody = req.body;
-    var persona_id = 0;
-    try {
-    
-      const entityPersonaCreate = await PersonaService.create(newBody);
-      persona_id = entityPersonaCreate.id;
-      console.log(persona_id);
-      const newCliente = await ClienteService.create({persona_id :persona_id});
+     try {
+      const newCliente = await ClienteService.create(newBody);
       return res.json(Response.get('Cliente creado', newCliente));
 
     } catch (error) {
@@ -71,9 +65,8 @@ class ClienteController {
      const cliente = req.body;
 
     try {
-      const entityPersonaUpdate = await PersonaService.update(cliente);
-      const updateCliente = await ClienteService.update(entityPersonaUpdate.id, cliente);
-
+      
+      const updateCliente = await ClienteService.update(cliente);
       return res.json(Response.get('cliente actualizado', updateCliente));
     } catch (error) {
       return res.json(Response.get('Error actualisando el cliente ==> '+error, error, 500));
