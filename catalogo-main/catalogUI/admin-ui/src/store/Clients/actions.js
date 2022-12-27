@@ -3,7 +3,7 @@ import { axiosInstance } from 'boot/axios'
 
 export function fetchClients(/* context */) {
   
-  return   axiosInstance.get('/cliente/')
+  return   axiosInstance.get('/cliente')
 }
 
 export function create(context, newClient) {

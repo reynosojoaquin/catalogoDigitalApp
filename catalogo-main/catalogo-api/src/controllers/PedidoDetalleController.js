@@ -1,4 +1,4 @@
-import PedidoDetalleService from '../services/PedidoService';
+import PedidoDetalleService from '../services/PedidoDetalleService';
 import Response from '../utils/response';
 import querystringConverterHelper from '../utils/querystringConverterHelper';
 

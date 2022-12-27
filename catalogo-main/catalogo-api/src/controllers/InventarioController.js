@@ -9,12 +9,12 @@ class InventarioController {
     try {      
                
       const InventarioEntidad =await InventarioService.create(newInventario);          
-      return res.json(Response.get('ciudad creada', InventarioEntidad));      
+      return res.json(Response.get('inventario  creado', InventarioEntidad));      
       
     } catch (error) {
        
       res.status(500).json({
-        message: 'se generado un error creando la ciudad'+ error,
+        message: 'se generado un error creando el inventario'+ error,
         data: error
       });
     }

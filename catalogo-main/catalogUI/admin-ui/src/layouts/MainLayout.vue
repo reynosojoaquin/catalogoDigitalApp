@@ -11,9 +11,9 @@
           @click="toggleLeftDrawer"
         />
 
-        <q-toolbar-title> Quasar App </q-toolbar-title>
+        <q-toolbar-title> Catalogo Digital Administracion </q-toolbar-title>
 
-        <div>Quasar</div>
+        <div>Catalogo</div>
       </q-toolbar>
     </q-header>
 
@@ -44,7 +44,7 @@
           </q-list>
         </q-expansion-item>
 
-        <q-expansion-item icon="house_siding" label="Consorcios">
+        <q-expansion-item icon="house_siding" label="Vendedores">
           <q-list class="q-pl-lg">
             <q-item
               to="/consorcios/index"
@@ -59,7 +59,63 @@
             </q-item>
           </q-list>
         </q-expansion-item>
+        <!--OPCIONES DE PRODUCTOS-->
+        <q-expansion-item icon="house_siding" label="Productos">
+          <q-list class="q-pl-lg">
+            
+            <!--INDEX PRODUCTOS-->
+            <q-item
+              to="/consorcios/index"
+              active-class="q-item-no-link-highlighting"
+            >
+              <q-item-section avatar>
+                <q-icon name="list_alt" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>Index</q-item-label>
+              </q-item-section>
+            </q-item>
+            <!--MARCAS PRODUCTOS-->
+            <q-item
+              to="/consorcios/index"
+              active-class="q-item-no-link-highlighting"
+            >
+              <q-item-section avatar>
+                <q-icon name="list_alt" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>Marcas</q-item-label>
+              </q-item-section>
+            </q-item>
+             <!--TIPOS PRODUCTOS-->
+             <q-item
+              to="/consorcios/index"
+              active-class="q-item-no-link-highlighting"
+            >
+              <q-item-section avatar>
+                <q-icon name="list_alt" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>Marcas</q-item-label>
+              </q-item-section>
+            </q-item>
+            <!--MODELOS PRODUCTOS-->
+            <q-item
+              to="/consorcios/index"
+              active-class="q-item-no-link-highlighting"
+            >
+              <q-item-section avatar>
+                <q-icon name="list_alt" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>Modelos</q-item-label>
+              </q-item-section>
+            </q-item>
 
+
+
+          </q-list>
+        </q-expansion-item>
         <q-expansion-item icon="settings" label="Administracion">
           <q-expansion-item
             icon="account_circle"

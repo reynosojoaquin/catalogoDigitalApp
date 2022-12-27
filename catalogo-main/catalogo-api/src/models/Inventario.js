@@ -16,7 +16,7 @@ const inventario = sequelize.define('inventario', {
     type: Sequelize.DECIMAL,
     allowNull:true
     },
-  Costo:{
+  costo:{
     type:Sequelize.DECIMAL,
     allowNull:true
     },
@@ -24,7 +24,7 @@ const inventario = sequelize.define('inventario', {
     type:Sequelize.DECIMAL,
     allowNull:true
     },
-  Suplidor_id:{
+  suplidor_id:{
     type:Sequelize.INTEGER,
     allowNull:true
     },
@@ -35,10 +35,6 @@ const inventario = sequelize.define('inventario', {
     margen:{
        type:Sequelize.DECIMAL,
        allowNull:false
-    },
-    suplidor_id:{
-      type:Sequelize.INTEGER,
-      allowNull:false
     }
 
 }, {timestamps:false});

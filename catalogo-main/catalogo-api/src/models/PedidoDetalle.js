@@ -1,6 +1,7 @@
 import Sequelize from 'sequelize';
 import { sequelize } from '../database/database';
-
+import producto from '../models/Producto';
+import pedido from '../models/Pedido';
 const pedidoDetalle = sequelize.define('PedidoDetalle', {
   indice: {
     type: Sequelize.INTEGER,
@@ -25,6 +26,10 @@ const pedidoDetalle = sequelize.define('PedidoDetalle', {
 
 
 
-}, {});
-
+}, {
+  freezeTableName: true,
+  timestamps:false
+});
+pedidoDetalle.belongsTo(producto,{foreignKey:'producto_id'});
+pedidoDetalle.belongsTo(pedido,{foreignKey:'pedido_id'});
 export default pedidoDetalle;

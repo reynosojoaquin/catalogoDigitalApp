@@ -21,7 +21,8 @@ import ProductoRoutes from '../routes/Producto';
 import SuplidorRoutes from '../routes/Suplidor';
 import UnidadMedidaRoutes from '../routes/UnidadMedida';
 import tipoProducto from '../routes/Tipo';
-import pedidoDetalle from '../models/PedidoDetalle';
+import pedidoDetalle from '../routes/PedidoDetalle';
+import statusPedido from '../routes/Status';
 // Initialization
 let router = express.Router();
 
@@ -49,4 +50,5 @@ router.use('/suplidor', SuplidorRoutes);
 router.use('/unidadMedida', UnidadMedidaRoutes);
 router.use('/tipoProducto', tipoProducto);
 router.use('/pedidoDetalle', pedidoDetalle);
+router.use('/status',statusPedido);
 export default router;

@@ -19,8 +19,14 @@ import productoTipo from '../models/ProductoTipo';
 import productoUnidadMedida from '../models/UnidadMedida';
 import producto from '../models/Producto';
 import vendedor from '../services/VendedorService';
+import suplidor from '../services/SuplidorService';
+import inventario from '../services/InventarioService';
+import statusPedido from '../services/EstatusPedidoService';
+import pedidos from '../services/PedidoService';
+import detallePedido from '../services/PedidoDetalleService';
 // Import model only for setup the initial data
 import { sequelize } from './database';
+
 
 /**
  * Development only!
@@ -270,18 +276,73 @@ const testData = () => {
              }
             };
         await vendedor.create(objVendendor);
-            console.log('sincronisacion completa');
+        // RESGISTRANDO DATOS DE MUESTRA DEL SUPLIDOR
+        var objSuplidor = {};
+        objSuplidor = {
+            'nombre':'COMPUMISCEL',
+            'telefono':'8092200000',
+            'ubicacion':'calle castillo 21',
+            'contacto':'Jose el Hage',
+            'documento':'05601098345',
+            'tipo_documento':'cedula'
+        };
+
+        await suplidor.create(objSuplidor);
+
+        // REGISTRANDO DATOS DE MUESTRA DEL INVENTARIO
+
+        var objInventario ={};
+        objInventario = [{
+            'producto_id': 1,
+            'precio': 207.50,
+            'costo': 150.00,
+             'flete': 50,
+            'suplidor_id':1,
+            'existencia': 200,
+            'margen':  5 
+        }];
+        await inventario.create(objInventario);
+
+        // REGISTRANDO DATOS DE MUESTRA DE LOS ESTADOS DE LOS PEDIDOS
+        var objStatus = {};
+        objStatus =[
+        { 'descripcion': 'Solicitado al suplidor'},
+        {'descripcion':  'En almacen'},
+        {'descripcion':  'pendiente de entrega'}    
+        ];
+        await statusPedido.create(objStatus);
+
+        var objPedidos = {};
+        objPedidos =[
+            {
+                'fecha': '2022-12-09',
+                'status_id': 1,
+                'vendedor_id': 1,
+                'total':2000,
+                'cliente_id':1,
+                 'activo':true
+             }
+        ];
+        await pedidos.create(objPedidos);
 
 
-          
-        })
-        .catch(error => {
-            console.log(error);
+        var objDetallePedido={};
+        objDetallePedido = [{
+            'producto_id': 1,
+            'pedido_id':1,
+            'cantidad':20,
+            'precio':100,
+            'total':2000
+        }];
 
-        });
+       await  detallePedido.create(objDetallePedido);
+    console.log('sincronisacion completa');
+    })
+    .catch(error => {
+        console.log(error);
 
-
-
+    });
+   
 };
 
 export default testData;

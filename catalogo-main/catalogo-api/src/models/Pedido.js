@@ -1,5 +1,7 @@
 import Sequelize from 'sequelize';
 import { sequelize } from '../database/database';
+import Cliente from '../models/Cliente';
+import Vendedor  from './Vendedor';
 
 
 const Pedido = sequelize.define('pedido', {
@@ -11,19 +13,19 @@ const Pedido = sequelize.define('pedido', {
    fecha: {
     type: Sequelize.DATE,
     allowNull: false  },
-   status:{
-    type:Sequelize.TEXT,
+   status_id:{
+    type:Sequelize.INTEGER,
     allowNull:false
    },
    total:{
     type:Sequelize.DECIMAL,
     allowNull:true
    },
-   clienteID:{
-      type:  Sequelize.INTEGER,
+   cliente_id:{
+      type:  Sequelize.INTEGER, 
       allowNull:false
    },
-   vendedorID:{
+   vendedor_id:{
     type:Sequelize.INTEGER,
     allowNull:false
    },
@@ -32,5 +34,6 @@ const Pedido = sequelize.define('pedido', {
    }
 
 }, {});
-
+Pedido.belongsTo(Cliente,{foreignKey:'cliente_id'});
+Pedido.belongsTo(Vendedor,{foreignKey:'vendedor_id'});
 export default Pedido;

@@ -118,9 +118,12 @@ export default {
  created(){
      console.log('REGISTRO CONTACTOS MOUNTED')
      this.setup()
-     if(this.tempData.length > 0){
-       this.showDetailContact(this.tempData) 
+     if(this.tempData != null){
+          if(this.tempData.length > 0){
+             this.showDetailContact(this.tempData) 
+            }
      }
+     
     
  },methods:{
    agregarContacto(){
@@ -246,13 +249,15 @@ export default {
    },
    setup(){
         let objData  =  JSON.parse(JSON.stringify(this.$store.getters["clients/getCurrentClient"]))
-        if (this.contactos.length == 0) {
-            this.contactos = objData.persona.contactos
-            this.tempData = JSON.parse(JSON.stringify(this.contactos))
-        }
-      console.log(JSON.stringify(this.tempData))
-      this.clienteID = objData.id
-    
+        console.log(objData);
+        if(objData != null){
+            if (this.contactos.length == 0) {
+              this.contactos = objData.persona.contactos
+              this.tempData = JSON.parse(JSON.stringify(this.contactos))
+              this.clienteID = objData.id
+            }
+        } 
+           
    }
  }
 }

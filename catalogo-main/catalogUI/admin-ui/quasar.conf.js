@@ -54,7 +54,7 @@ module.exports = configure(function (ctx) {
       gzip: false,
       analyze: false,
       env: {
-        API: 'http://localhost:5000/api'
+        API: 'http://localhost:5001/api'
       },
       vueRouterMode: 'hash', // available values: 'hash', 'history'
 

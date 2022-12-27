@@ -151,9 +151,12 @@ export default {
    created() {
       console.log("MONTANDO EL INDICE DE DIRECCIONES");
       this.setup();
-      if (this.tempData.length > 0) {
+      if(this.tempData != null){
+        if (this.tempData.length > 0) {
         this.showDetailLocation(this.tempData);
       }
+      }
+      
     },
   methods: {
     getDireccionData(data) {
@@ -312,7 +315,8 @@ export default {
        this.sectores        =  JSON.parse(JSON.stringify(this.$store.getters["Locations/getSectores"]))
        this.tipoDireccion   =  JSON.parse(JSON.stringify(this.$store.getters["Locations/getTipoDirecciones"]))
        let objData          =  JSON.parse(JSON.stringify(this.$store.getters["clients/getCurrentClient"]))
-        if (this.direcciones === null) {
+        if (this.direcciones === null && this.objData != null) {
+            console.log("ASIGNANDO DATOS DIRECCIONES EXISTENTES")
             this.direcciones = objData.persona.direcciones
             this.tempData = JSON.parse(JSON.stringify(this.direcciones))
             this.clienteID = objData.id
