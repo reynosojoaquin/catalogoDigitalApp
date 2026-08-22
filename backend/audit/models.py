@@ -4,6 +4,17 @@ from django.conf import settings
 from django.db import models
 
 
+class ImmutableAuditEventQuerySet(models.QuerySet):
+    def update(self, **kwargs):
+        raise ValueError("Audit events are append-only")
+
+    def delete(self):
+        raise ValueError("Audit events are append-only")
+
+    def bulk_update(self, objs, fields, batch_size=None):
+        raise ValueError("Audit events are append-only")
+
+
 class AuditEvent(models.Model):
     class Result(models.TextChoices):
         SUCCESS = "success", "Success"
@@ -22,6 +33,8 @@ class AuditEvent(models.Model):
     ip_address = models.GenericIPAddressField(null=True, blank=True)
     metadata = models.JSONField(default=dict, blank=True)
 
+    objects = ImmutableAuditEventQuerySet.as_manager()
+
     class Meta:
         ordering = ["-occurred_at"]
         indexes = [models.Index(fields=["resource_type", "resource_id", "occurred_at"])]
@@ -31,3 +44,5 @@ class AuditEvent(models.Model):
             raise ValueError("Audit events are append-only")
         return super().save(*args, **kwargs)
 
+    def delete(self, *args, **kwargs):
+        raise ValueError("Audit events are append-only")
