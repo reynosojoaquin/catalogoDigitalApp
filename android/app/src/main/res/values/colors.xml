@@ -1,0 +1,6 @@
+<resources>
+    <color name="catalog_primary">#315DA8</color>
+    <color name="catalog_on_primary">#FFFFFF</color>
+    <color name="catalog_background">#FAF8FF</color>
+    <color name="catalog_on_background">#1A1B20</color>
+</resources>

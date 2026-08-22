@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Digital Catalog</string>
+    <string name="sync_title">Synchronization</string>
+    <string name="sync_pending">Pending: %1$d</string>
+    <string name="sync_conflicts">Conflicts: %1$d</string>
+    <string name="sync_rejected">Rejected: %1$d</string>
+    <string name="sync_now">Sync now</string>
+    <string name="sync_configuration_missing">Configure the API address before synchronizing.</string>
+</resources>

@@ -1,0 +1,8 @@
+<resources>
+    <style name="Theme.CatalogDigital" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/catalog_primary</item>
+        <item name="colorOnPrimary">@color/catalog_on_primary</item>
+        <item name="android:colorBackground">@color/catalog_background</item>
+        <item name="android:textColor">@color/catalog_on_background</item>
+    </style>
+</resources>
