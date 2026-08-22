@@ -12,4 +12,14 @@
     <string name="login_action">Sign in</string>
     <string name="login_failed">Unable to sign in. Check your credentials and connection.</string>
     <string name="login_required">Sign in to synchronize.</string>
+    <string name="customer_create_title">New customer</string>
+    <string name="customer_full_name">Full name</string>
+    <string name="customer_email">Email</string>
+    <string name="customer_phone">Phone</string>
+    <string name="customer_identity">Identity document</string>
+    <string name="customer_save">Save offline</string>
+    <string name="customer_saved">Customer saved and pending synchronization.</string>
+    <string name="customer_invalid">Enter the name and at least one contact or identity value.</string>
+    <string name="customer_duplicate">A local customer already has those details.</string>
+    <string name="customer_save_failed">Unable to save the customer.</string>
 </resources>

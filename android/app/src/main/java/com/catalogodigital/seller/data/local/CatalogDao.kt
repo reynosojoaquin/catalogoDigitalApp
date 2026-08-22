@@ -17,6 +17,12 @@ interface CatalogDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertCustomer(customer: CustomerEntity)
 
+    @Query("SELECT COUNT(*) FROM customers WHERE email = :email")
+    suspend fun countCustomersByEmail(email: String): Int
+
+    @Query("SELECT COUNT(*) FROM customers WHERE phone = :phone")
+    suspend fun countCustomersByPhone(phone: String): Int
+
     @Query("SELECT * FROM products WHERE isActive = 1 ORDER BY name, sku")
     fun observeActiveProducts(): Flow<List<ProductEntity>>
 

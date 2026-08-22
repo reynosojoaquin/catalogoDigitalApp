@@ -32,6 +32,7 @@ class CatalogFeedRepository(private val database: CatalogDatabase) {
                         version = change.data.long("version"),
                         updatedAt = change.data.string("updated_at"),
                     ))
+                    database.customerDraftDao().deleteById(change.entityId)
                 }
             } else {
                 if ((dao.productVersion(change.entityId) ?: 0) <= change.version) {

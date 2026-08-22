@@ -22,6 +22,10 @@ class MainActivity : ComponentActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        binding.createCustomer.setOnClickListener {
+            startActivity(Intent(this, CustomerCreateActivity::class.java))
+        }
+
         binding.syncNow.setOnClickListener {
             if (BuildConfig.API_BASE_URL.isBlank()) {
                 Toast.makeText(this, R.string.sync_configuration_missing, Toast.LENGTH_LONG).show()

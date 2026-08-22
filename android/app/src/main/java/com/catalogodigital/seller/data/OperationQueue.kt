@@ -11,18 +11,20 @@ class OperationQueue(
     private val cipher: KeystoreCipher = KeystoreCipher(),
 ) {
     suspend fun enqueue(operationType: String, deviceId: UUID, payloadJson: String) {
+        dao.insert(build(operationType, deviceId, payloadJson))
+    }
+
+    fun build(operationType: String, deviceId: UUID, payloadJson: String): PendingOperation {
         val encrypted = cipher.encrypt(payloadJson.encodeToByteArray())
-        dao.insert(
-            PendingOperation(
-                operationId = UUID.randomUUID().toString(),
-                operationType = operationType,
-                idempotencyKey = UUID.randomUUID().toString(),
-                deviceId = deviceId.toString(),
-                clientTimestamp = Instant.now().toString(),
-                clientVersion = 1,
-                encryptedPayload = encrypted.ciphertext,
-                payloadIv = encrypted.iv,
-            ),
+        return PendingOperation(
+            operationId = UUID.randomUUID().toString(),
+            operationType = operationType,
+            idempotencyKey = UUID.randomUUID().toString(),
+            deviceId = deviceId.toString(),
+            clientTimestamp = Instant.now().toString(),
+            clientVersion = 1,
+            encryptedPayload = encrypted.ciphertext,
+            payloadIv = encrypted.iv,
         )
     }
 

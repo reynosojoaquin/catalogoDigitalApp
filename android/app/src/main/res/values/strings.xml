@@ -12,4 +12,14 @@
     <string name="login_action">Entrar</string>
     <string name="login_failed">No fue posible iniciar sesión. Verifica tus datos y la conexión.</string>
     <string name="login_required">Inicia sesión para sincronizar.</string>
+    <string name="customer_create_title">Nuevo cliente</string>
+    <string name="customer_full_name">Nombre completo</string>
+    <string name="customer_email">Correo electrónico</string>
+    <string name="customer_phone">Teléfono</string>
+    <string name="customer_identity">Documento de identidad</string>
+    <string name="customer_save">Guardar sin conexión</string>
+    <string name="customer_saved">Cliente guardado y pendiente de sincronización.</string>
+    <string name="customer_invalid">Completa el nombre y al menos un dato de contacto o identificación.</string>
+    <string name="customer_duplicate">Ya existe un cliente local con esos datos.</string>
+    <string name="customer_save_failed">No fue posible guardar el cliente.</string>
 </resources>
