@@ -6,7 +6,9 @@ import androidx.work.WorkerParameters
 import com.catalogodigital.seller.BuildConfig
 import com.catalogodigital.seller.CatalogApplication
 import com.catalogodigital.seller.data.OperationQueue
+import com.catalogodigital.seller.data.CatalogFeedRepository
 import com.catalogodigital.seller.data.local.OperationStatus
+import com.catalogodigital.seller.security.DeviceIdentity
 import com.catalogodigital.seller.security.SessionStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.CancellationException
@@ -14,26 +16,43 @@ import kotlinx.coroutines.withContext
 
 class SyncWorker(context: Context, parameters: WorkerParameters) : CoroutineWorker(context, parameters) {
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
-        val dao = (applicationContext as CatalogApplication).database.pendingOperationDao()
+        val database = (applicationContext as CatalogApplication).database
+        val dao = database.pendingOperationDao()
         dao.recoverInterrupted(OperationStatus.IN_FLIGHT, OperationStatus.PENDING)
-        val operations = dao.claim(SyncBatchPolicy.MAX_OPERATIONS, System.currentTimeMillis())
-        if (operations.isEmpty()) return@withContext Result.success()
-
         val token = SessionStore(applicationContext).token()
         if (BuildConfig.API_BASE_URL.isBlank() || token.isNullOrBlank()) {
-            operations.forEach { dao.updateResult(it.operationId, OperationStatus.PENDING, null) }
             return@withContext Result.failure()
         }
 
+        val operations = dao.claim(SyncBatchPolicy.MAX_OPERATIONS, System.currentTimeMillis())
         try {
-            val queue = OperationQueue(dao)
-            val results = SyncApiClient(BuildConfig.API_BASE_URL, token).push(operations, queue)
-            results.forEach { dao.updateResult(it.operationId, it.status, it.conflictCode) }
-            if (operations.size == SyncBatchPolicy.MAX_OPERATIONS) Result.retry() else Result.success()
+            if (operations.isNotEmpty()) {
+                val queue = OperationQueue(dao)
+                val results = SyncApiClient(BuildConfig.API_BASE_URL, token).push(operations, queue)
+                results.forEach { dao.updateResult(it.operationId, it.status, it.conflictCode) }
+            }
+
+            val repository = CatalogFeedRepository(database)
+            val feedClient = CatalogFeedApiClient(BuildConfig.API_BASE_URL, token)
+            val deviceId = DeviceIdentity(applicationContext).id().toString()
+            var hasMore = true
+            var pageCount = 0
+            while (hasMore && pageCount < MAX_FEED_PAGES) {
+                val page = feedClient.changes(repository.cursor())
+                repository.apply(page)
+                feedClient.acknowledge(deviceId, page.nextCursor)
+                hasMore = page.hasMore
+                pageCount += 1
+            }
+            if (operations.size == SyncBatchPolicy.MAX_OPERATIONS || hasMore) Result.retry() else Result.success()
         } catch (error: Exception) {
             if (error is CancellationException) throw error
             operations.forEach { dao.updateResult(it.operationId, OperationStatus.PENDING, null) }
             Result.retry()
         }
+    }
+
+    private companion object {
+        const val MAX_FEED_PAGES = 10
     }
 }
