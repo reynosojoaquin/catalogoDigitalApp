@@ -96,6 +96,7 @@ class CommissionMovement(models.Model):
     movement_type = models.CharField(max_length=10, choices=MovementType.choices)
     amount = models.DecimalField(max_digits=14, decimal_places=2)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.AVAILABLE, db_index=True)
+    version = models.PositiveBigIntegerField(default=1)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -110,3 +111,10 @@ class CommissionMovement(models.Model):
 
     def __str__(self):
         return str(self.id)
+
+    def save(self, *args, **kwargs):
+        if not self._state.adding:
+            self.version += 1
+            if kwargs.get("update_fields") is not None:
+                kwargs["update_fields"] = set(kwargs["update_fields"]) | {"version"}
+        return super().save(*args, **kwargs)

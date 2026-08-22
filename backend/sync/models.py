@@ -11,6 +11,10 @@ class SyncChange(models.Model):
     entity_type = models.CharField(max_length=30)
     entity_id = models.UUIDField()
     version = models.PositiveBigIntegerField()
+    seller = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.PROTECT,
+        related_name="sync_changes",
+    )
     occurred_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

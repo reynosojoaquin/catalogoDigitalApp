@@ -70,12 +70,42 @@ class CatalogChangeFeedView(APIView):
             limit = min(max(int(request.query_params.get("limit", 100)), 1), 200)
         except ValueError as error:
             raise ValidationError(_("Cursor and limit must be integers.")) from error
-        changes = list(SyncChange.objects.filter(sequence__gt=after)[:limit])
+        changes = list(SyncChange.objects.filter(
+            sequence__gt=after, entity_type__in=("customer", "product")
+        )[:limit])
         next_cursor = changes[-1].sequence if changes else after
         return Response({
             "changes": [serialize_change(change) for change in changes],
             "next_cursor": next_cursor,
-            "has_more": SyncChange.objects.filter(sequence__gt=next_cursor).exists(),
+            "has_more": SyncChange.objects.filter(
+                sequence__gt=next_cursor, entity_type__in=("customer", "product")
+            ).exists(),
+        })
+
+
+class BusinessChangeFeedView(APIView):
+    permission_classes = [IsSeller]
+
+    def get(self, request):
+        try:
+            after = max(int(request.query_params.get("after", 0)), 0)
+            limit = min(max(int(request.query_params.get("limit", 100)), 1), 200)
+        except ValueError as error:
+            raise ValidationError(_("Cursor and limit must be integers.")) from error
+        changes = list(SyncChange.objects.filter(
+            sequence__gt=after, seller=request.user
+        )[:limit])
+        next_cursor = changes[-1].sequence if changes else after
+        return Response({
+            "changes": [{
+                "sequence": change.sequence, "entity_type": change.entity_type,
+                "entity_id": str(change.entity_id), "version": change.version,
+                "occurred_at": change.occurred_at.isoformat(),
+            } for change in changes],
+            "next_cursor": next_cursor,
+            "has_more": SyncChange.objects.filter(
+                sequence__gt=next_cursor, seller=request.user
+            ).exists(),
         })
 
 

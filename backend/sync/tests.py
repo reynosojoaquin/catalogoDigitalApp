@@ -18,6 +18,7 @@ class OfflineSyncApiTests(APITestCase):
     changes_url = "/api/sync/catalog-changes/"
     cursor_url = "/api/sync/cursor/ack/"
     batch_url = "/api/sync/batch/"
+    business_changes_url = "/api/sync/business-changes/"
 
     def setUp(self):
         self.seller = get_user_model().objects.create_user(
@@ -239,3 +240,36 @@ class OfflineSyncApiTests(APITestCase):
         self.assertEqual(second.status_code, 200)
         self.assertEqual(Customer.objects.count(), 1)
         self.assertEqual(SyncOperationReceipt.objects.count(), 1)
+
+    def test_business_feed_only_contains_authenticated_seller_changes(self):
+        product = Product.objects.create(
+            sku="PRODUCT-1", name="Product", price=Decimal("10.00"), commission_amount=Decimal("1.00")
+        )
+        own_customer = Customer.objects.create(
+            full_name="Own", email="own@example.test", created_by=self.seller
+        )
+        other_seller = get_user_model().objects.create_user(
+            username="other-seller", password="StrongPassword123!"
+        )
+        UserProfile.objects.create(user=other_seller, role=UserProfile.Role.SELLER)
+        other_device = Device.objects.create(
+            user=other_seller, platform=Device.Platform.ANDROID, app_version="1.0.0"
+        )
+        other_customer = Customer.objects.create(
+            full_name="Other", email="other@example.test", created_by=other_seller
+        )
+        own_order = Order.objects.create(
+            seller=self.seller, customer=own_customer, device=self.device, total=Decimal("10.00"),
+            idempotency_key=uuid.uuid4(), request_hash="a" * 64, client_created_at=timezone.now(),
+        )
+        Order.objects.create(
+            seller=other_seller, customer=other_customer, device=other_device, total=Decimal("10.00"),
+            idempotency_key=uuid.uuid4(), request_hash="b" * 64, client_created_at=timezone.now(),
+        )
+
+        response = self.client.get(self.business_changes_url)
+
+        self.assertEqual(response.status_code, 200)
+        order_changes = [item for item in response.data["changes"] if item["entity_type"] == "order"]
+        self.assertEqual(len(order_changes), 1)
+        self.assertEqual(order_changes[0]["entity_id"], str(own_order.id))

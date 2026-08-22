@@ -102,9 +102,9 @@ def confirm_settlement(
                 )
                 for movement, signed_amount in zip(movements, signed_amounts)
             ])
-            CommissionMovement.objects.filter(pk__in=[movement.pk for movement in movements]).update(
-                status=CommissionMovement.Status.SETTLED
-            )
+            for movement in movements:
+                movement.status = CommissionMovement.Status.SETTLED
+                movement.save(update_fields=["status"])
     except IntegrityError as error:
         raise SettlementConflictError from error
 

@@ -81,6 +81,6 @@ class CommissionMovementSerializer(serializers.ModelSerializer):
     class Meta:
         model = CommissionMovement
         fields = (
-            "id", "invoice_id", "invoice_item_id", "movement_type", "amount", "status", "created_at",
+            "id", "invoice_id", "invoice_item_id", "movement_type", "amount", "status", "version", "created_at",
         )
         read_only_fields = fields
