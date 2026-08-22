@@ -25,4 +25,7 @@ interface OrderDraftDao {
 
     @Query("SELECT * FROM products WHERE id IN (:ids) AND isActive = 1")
     suspend fun activeProductsByIds(ids: List<String>): List<ProductEntity>
+
+    @Query("UPDATE order_drafts SET status = :status WHERE id = :id")
+    suspend fun updateStatus(id: String, status: String)
 }

@@ -8,7 +8,13 @@ import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URI
 
-data class OperationResult(val operationId: String, val status: String, val conflictCode: String?)
+data class OperationResult(
+    val operationId: String,
+    val entityType: String,
+    val entityId: String?,
+    val status: String,
+    val conflictCode: String?,
+)
 
 class SyncApiClient(private val baseUrl: String, private val token: String) {
     fun push(operations: List<PendingOperation>, queue: OperationQueue): List<OperationResult> {
@@ -48,6 +54,8 @@ class SyncApiClient(private val baseUrl: String, private val token: String) {
                 val item = results.getJSONObject(index)
                 OperationResult(
                     operationId = item.getString("operation_id"),
+                    entityType = item.getString("entity_type"),
+                    entityId = if (item.isNull("entity_id")) null else item.optString("entity_id").ifBlank { null },
                     status = item.getString("status"),
                     conflictCode = item.optString("conflict_code").ifBlank { null },
                 )

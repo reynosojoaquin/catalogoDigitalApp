@@ -7,6 +7,7 @@ import com.catalogodigital.seller.BuildConfig
 import com.catalogodigital.seller.CatalogApplication
 import com.catalogodigital.seller.data.OperationQueue
 import com.catalogodigital.seller.data.CatalogFeedRepository
+import com.catalogodigital.seller.data.SyncReconciliationRepository
 import com.catalogodigital.seller.data.local.OperationStatus
 import com.catalogodigital.seller.security.DeviceIdentity
 import com.catalogodigital.seller.security.SessionStore
@@ -29,7 +30,7 @@ class SyncWorker(context: Context, parameters: WorkerParameters) : CoroutineWork
             if (operations.isNotEmpty()) {
                 val queue = OperationQueue(dao)
                 val results = SyncApiClient(BuildConfig.API_BASE_URL, token).push(operations, queue)
-                results.forEach { dao.updateResult(it.operationId, it.status, it.conflictCode) }
+                SyncReconciliationRepository(database).apply(operations, results)
             }
 
             val repository = CatalogFeedRepository(database)

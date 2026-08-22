@@ -50,7 +50,7 @@ class OfflineOrderRepository(private val database: CatalogDatabase) {
                     }
                 })
             val operation = OperationQueue(database.pendingOperationDao())
-                .build("order_create", deviceId, payload.toString())
+                .build("order_create", orderId, deviceId, payload.toString())
 
             dao.insertOrder(OrderDraftEntity(
                 id = orderId.toString(),

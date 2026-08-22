@@ -3,6 +3,7 @@ package com.catalogodigital.seller.data.local
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import androidx.room.ColumnInfo
 
 @Entity(
     tableName = "customer_drafts",
@@ -19,4 +20,5 @@ data class CustomerDraftEntity(
     val phone: String?,
     val identityFingerprint: ByteArray?,
     val createdAt: String,
+    @ColumnInfo(defaultValue = "'pending'") val status: String = OperationStatus.PENDING,
 )

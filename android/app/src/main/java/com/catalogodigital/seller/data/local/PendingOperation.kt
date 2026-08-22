@@ -19,6 +19,7 @@ object OperationStatus {
 data class PendingOperation(
     @PrimaryKey val operationId: String,
     val operationType: String,
+    val entityId: String? = null,
     val idempotencyKey: String,
     val deviceId: String,
     val clientTimestamp: String,

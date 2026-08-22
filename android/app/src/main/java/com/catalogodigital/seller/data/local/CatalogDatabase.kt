@@ -13,7 +13,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         ProductEntity::class, CustomerDraftEntity::class, OrderDraftEntity::class,
         OrderDraftItemEntity::class,
     ],
-    version = 4,
+    version = 5,
     exportSchema = true,
 )
 abstract class CatalogDatabase : RoomDatabase() {
@@ -28,7 +28,7 @@ abstract class CatalogDatabase : RoomDatabase() {
             context.applicationContext,
             CatalogDatabase::class.java,
             "catalog-digital.db",
-        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4).build()
+        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5).build()
 
         private val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(db: SupportSQLiteDatabase) {
@@ -59,6 +59,13 @@ abstract class CatalogDatabase : RoomDatabase() {
                 db.execSQL("CREATE TABLE IF NOT EXISTS `order_draft_items` (`orderId` TEXT NOT NULL, `productId` TEXT NOT NULL, `productSku` TEXT NOT NULL, `productName` TEXT NOT NULL, `unitPriceMinor` INTEGER NOT NULL, `unitCommissionMinor` INTEGER NOT NULL, `quantity` INTEGER NOT NULL, `lineTotalMinor` INTEGER NOT NULL, PRIMARY KEY(`orderId`, `productId`), FOREIGN KEY(`orderId`) REFERENCES `order_drafts`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT )")
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_order_draft_items_orderId` ON `order_draft_items` (`orderId`)")
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_order_draft_items_productId` ON `order_draft_items` (`productId`)")
+            }
+        }
+
+        private val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `pending_operations` ADD COLUMN `entityId` TEXT")
+                db.execSQL("ALTER TABLE `customer_drafts` ADD COLUMN `status` TEXT NOT NULL DEFAULT 'pending'")
             }
         }
     }

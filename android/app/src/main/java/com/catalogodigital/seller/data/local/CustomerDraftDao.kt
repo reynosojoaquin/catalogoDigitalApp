@@ -20,4 +20,7 @@ interface CustomerDraftDao {
 
     @Query("DELETE FROM customer_drafts WHERE id = :id")
     suspend fun deleteById(id: String)
+
+    @Query("UPDATE customer_drafts SET status = :status WHERE id = :id")
+    suspend fun updateStatus(id: String, status: String)
 }

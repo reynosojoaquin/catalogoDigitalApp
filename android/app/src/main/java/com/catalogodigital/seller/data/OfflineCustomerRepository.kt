@@ -30,7 +30,7 @@ class OfflineCustomerRepository(
             .put("phone", input.phone ?: JSONObject.NULL)
             .put("identity_document", input.identity ?: JSONObject.NULL)
         val queue = OperationQueue(database.pendingOperationDao())
-        val operation = queue.build("customer_create", deviceId, payload.toString())
+        val operation = queue.build("customer_create", customerId, deviceId, payload.toString())
 
         try {
             database.withTransaction {
