@@ -58,4 +58,15 @@ Caddy termina TLS automáticamente. El backend no se expone directamente, sirve 
 - Zona horaria inicial de presentación: `America/Santo_Domingo`; las fechas se almacenan en UTC.
 - La API deniega acceso por defecto; `/health/` es el endpoint público de comprobación.
 
+## Administración web
+
+El panel `/admin/` permite consultar documentos históricos sin editarlos. Los flujos operativos se ejecutan mediante acciones sobre los registros seleccionados:
+
+- Confirmar entrega completa desde pedidos; la factura interna se genera en la misma transacción.
+- Confirmar pagos totales reportados; las comisiones fijas se acreditan automáticamente.
+- Confirmar devoluciones; se generan movimientos compensatorios de comisión.
+- Liquidar comisiones disponibles desde los perfiles de vendedores.
+
+Estas acciones solo están disponibles para superusuarios o personal con rol administrador y el permiso Django correspondiente. Todas reutilizan los servicios de dominio, generan claves de idempotencia y producen eventos de auditoría.
+
 Consulta [AGENTS.md](AGENTS.md) para las reglas funcionales y técnicas del proyecto.

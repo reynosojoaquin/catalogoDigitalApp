@@ -1,5 +1,10 @@
 from django.contrib import admin
+from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
+import uuid
 
+from audit.admin_actions import DomainActionAdminMixin
+from .services import PaymentIdempotencyConflictError, PaymentNotConfirmableError, confirm_payment
 from .models import CommissionMovement, PaymentConfirmation, PaymentReport
 
 
@@ -15,11 +20,38 @@ class ReadOnlyFinancialAdmin(admin.ModelAdmin):
 
 
 @admin.register(PaymentReport)
-class PaymentReportAdmin(ReadOnlyFinancialAdmin):
+class PaymentReportAdmin(DomainActionAdminMixin, ReadOnlyFinancialAdmin):
     list_display = ("id", "invoice", "seller", "method", "amount", "status", "created_at")
     list_filter = ("method", "status")
     search_fields = ("id", "invoice__id", "seller__username", "external_terminal_reference")
     readonly_fields = [field.name for field in PaymentReport._meta.fields]
+    actions = ("confirm_payments",)
+
+    @admin.action(permissions=["administer"], description=_("Confirm full payment"))
+    def confirm_payments(self, request, queryset):
+        confirmed = 0
+        skipped = 0
+        for report in queryset.order_by("created_at", "id"):
+            try:
+                confirm_payment(
+                    actor=request.user,
+                    confirmation_id=uuid.uuid4(),
+                    payment_report_id=report.id,
+                    confirmed_at=timezone.now(),
+                    idempotency_key=uuid.uuid4(),
+                    correlation_id=self.correlation_id(request),
+                )
+                confirmed += 1
+            except (PaymentIdempotencyConflictError, PaymentNotConfirmableError):
+                skipped += 1
+        if confirmed:
+            self.message_user(request, _("Confirmed payments: %(count)d") % {"count": confirmed})
+        if skipped:
+            self.message_user(
+                request,
+                _("Payments not eligible for confirmation: %(count)d") % {"count": skipped},
+                level="warning",
+            )
 
 
 @admin.register(PaymentConfirmation)

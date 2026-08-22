@@ -266,3 +266,21 @@ class PaymentApiTests(APITestCase):
                 request_hash="e" * 64,
                 client_reported_at=timezone.now(),
             )
+
+    def test_admin_action_confirms_payment_and_credits_commission(self):
+        self.authenticate(self.seller)
+        report_id = self.post_payment().data["id"]
+        self.admin_user.is_staff = True
+        self.admin_user.is_superuser = True
+        self.admin_user.save(update_fields=["is_staff", "is_superuser"])
+        self.client.force_login(self.admin_user)
+
+        response = self.client.post(
+            "/admin/payments/paymentreport/",
+            {"action": "confirm_payments", "_selected_action": report_id, "index": "0"},
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(PaymentConfirmation.objects.filter(payment_report_id=report_id).exists())
+        self.assertEqual(CommissionMovement.objects.filter(invoice=self.invoice).count(), 1)

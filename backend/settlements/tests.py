@@ -171,3 +171,24 @@ class CommissionSettlementTests(TestCase):
 
         with self.assertRaises(IntegrityError), transaction.atomic():
             settlement.items.filter(pk=item.pk).update(signed_amount=Decimal("999.00"))
+
+    def test_admin_action_settles_available_commissions(self):
+        self.admin_user.is_staff = True
+        self.admin_user.is_superuser = True
+        self.admin_user.save(update_fields=["is_staff", "is_superuser"])
+        client = APIClient()
+        client.force_login(self.admin_user)
+
+        response = client.post(
+            "/admin/accounts/userprofile/",
+            {
+                "action": "settle_available_commissions",
+                "_selected_action": str(self.seller.profile.pk),
+                "index": "0",
+            },
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(CommissionSettlement.objects.filter(seller=self.seller).exists())
+        self.assertFalse(CommissionMovement.objects.filter(status="available").exists())

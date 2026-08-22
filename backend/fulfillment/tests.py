@@ -2,6 +2,7 @@ import uuid
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Permission
 from django.utils import timezone
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
@@ -196,3 +197,38 @@ class FulfillmentApiTests(APITestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, [])
+
+    def test_admin_action_confirms_delivery_through_domain_service(self):
+        self.admin_user.is_staff = True
+        self.admin_user.is_superuser = True
+        self.admin_user.save(update_fields=["is_staff", "is_superuser"])
+        self.client.force_login(self.admin_user)
+
+        response = self.client.post(
+            "/admin/sales/order/",
+            {"action": "confirm_deliveries", "_selected_action": str(self.order.id), "index": "0"},
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(Delivery.objects.filter(order=self.order, confirmed_by=self.admin_user).exists())
+        self.assertTrue(Invoice.objects.filter(order=self.order).exists())
+        self.assertTrue(AuditEvent.objects.filter(action="delivery.completed").exists())
+
+    def test_seller_role_cannot_invoke_admin_delivery_action(self):
+        self.seller.is_staff = True
+        self.seller.user_permissions.add(
+            Permission.objects.get(codename="view_order"),
+            Permission.objects.get(codename="change_order"),
+        )
+        self.seller.save(update_fields=["is_staff"])
+        self.client.force_login(self.seller)
+
+        response = self.client.post(
+            "/admin/sales/order/",
+            {"action": "confirm_deliveries", "_selected_action": str(self.order.id), "index": "0"},
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Delivery.objects.exists())
