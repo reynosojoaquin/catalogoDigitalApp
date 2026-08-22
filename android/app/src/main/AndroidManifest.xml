@@ -27,5 +27,8 @@
         <activity
             android:name=".OrderCreateActivity"
             android:exported="false" />
+        <activity
+            android:name=".BusinessDocumentsActivity"
+            android:exported="false" />
     </application>
 </manifest>

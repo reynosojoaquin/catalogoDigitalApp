@@ -123,6 +123,21 @@ class OfflineSyncApiTests(APITestCase):
         self.assertEqual(change["data"]["price"], "125.00")
         self.assertEqual(response.data["next_cursor"], change["sequence"])
 
+    def test_initial_catalog_feed_pairs_historical_events_with_current_version(self):
+        product = Product.objects.create(
+            sku="PRODUCT-1", name="Product", price=Decimal("100.00"),
+            commission_amount=Decimal("5.00"),
+        )
+        product.price = Decimal("125.00")
+        product.save()
+
+        response = self.client.get(self.changes_url)
+
+        changes = [item for item in response.data["changes"] if item["entity_id"] == str(product.id)]
+        self.assertEqual(len(changes), 2)
+        self.assertTrue(all(item["version"] == 2 for item in changes))
+        self.assertTrue(all(item["data"]["version"] == 2 for item in changes))
+
     def test_cursor_acknowledgement_is_monotonic_and_device_scoped(self):
         Product.objects.create(
             sku="PRODUCT-1", name="Product", price=Decimal("100.00"),
@@ -275,3 +290,22 @@ class OfflineSyncApiTests(APITestCase):
         self.assertEqual(order_changes[0]["entity_id"], str(own_order.id))
         self.assertEqual(order_changes[0]["data"]["id"], str(own_order.id))
         self.assertEqual(order_changes[0]["data"]["total"], "10.00")
+
+    def test_initial_business_feed_pairs_historical_events_with_current_version(self):
+        customer = Customer.objects.create(
+            full_name="Customer", email="business-version@example.test", created_by=self.seller
+        )
+        order = Order.objects.create(
+            seller=self.seller, customer=customer, device=self.device, total=Decimal("10.00"),
+            idempotency_key=uuid.uuid4(), request_hash="c" * 64, client_created_at=timezone.now(),
+        )
+        order.status = Order.Status.CANCELLED
+        order.version += 1
+        order.save(update_fields=["status", "version", "updated_at"])
+
+        response = self.client.get(self.business_changes_url)
+
+        changes = [item for item in response.data["changes"] if item["entity_id"] == str(order.id)]
+        self.assertEqual(len(changes), 2)
+        self.assertTrue(all(item["version"] == 2 for item in changes))
+        self.assertTrue(all(item["data"]["version"] == 2 for item in changes))

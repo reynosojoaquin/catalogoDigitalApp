@@ -37,4 +37,23 @@
     <string name="order_line_format">%1$s × %2$d — %3$s</string>
     <string name="order_total_format">Provisional total: %1$s</string>
     <string name="order_product_format">%1$s — %2$s</string>
+    <string name="business_documents_title">My operations</string>
+    <string name="business_documents_empty">No synchronized operations.</string>
+    <string name="business_document_format">%1$s — %2$s — %3$s</string>
+    <string name="business_type_order">Order</string>
+    <string name="business_type_invoice">Invoice</string>
+    <string name="business_type_payment">Payment</string>
+    <string name="business_type_return">Return</string>
+    <string name="business_type_commission">Commission</string>
+    <string name="business_type_settlement">Settlement</string>
+    <string name="status_submitted">Submitted</string>
+    <string name="status_delivered">Delivered</string>
+    <string name="status_cancelled">Cancelled</string>
+    <string name="status_unpaid">Unpaid</string>
+    <string name="status_paid">Paid</string>
+    <string name="status_reported">Reported</string>
+    <string name="status_confirmed">Confirmed</string>
+    <string name="status_available">Available</string>
+    <string name="status_settled">Settled</string>
+    <string name="status_unknown">Status unavailable</string>
 </resources>

@@ -194,7 +194,8 @@ def serialize_change(change):
         }
     return {
         "sequence": change.sequence, "entity_type": change.entity_type,
-        "entity_id": str(change.entity_id), "version": change.version,
+        "entity_id": str(change.entity_id),
+        "version": change.version if entity is None else entity.version,
         "occurred_at": change.occurred_at.isoformat(), "data": data,
     }
 
@@ -219,7 +220,7 @@ def serialize_business_change(change):
         "sequence": change.sequence,
         "entity_type": change.entity_type,
         "entity_id": str(change.entity_id),
-        "version": change.version,
+        "version": change.version if entity is None else getattr(entity, "version", change.version),
         "occurred_at": change.occurred_at.isoformat(),
         "data": None if entity is None else serializer_class(entity).data,
     }

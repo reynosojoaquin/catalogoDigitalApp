@@ -11,9 +11,9 @@ import androidx.sqlite.db.SupportSQLiteDatabase
     entities = [
         PendingOperation::class, SyncCursor::class, CustomerEntity::class,
         ProductEntity::class, CustomerDraftEntity::class, OrderDraftEntity::class,
-        OrderDraftItemEntity::class,
+        OrderDraftItemEntity::class, BusinessDocumentEntity::class,
     ],
-    version = 5,
+    version = 6,
     exportSchema = true,
 )
 abstract class CatalogDatabase : RoomDatabase() {
@@ -22,13 +22,16 @@ abstract class CatalogDatabase : RoomDatabase() {
     abstract fun syncCursorDao(): SyncCursorDao
     abstract fun customerDraftDao(): CustomerDraftDao
     abstract fun orderDraftDao(): OrderDraftDao
+    abstract fun businessDocumentDao(): BusinessDocumentDao
 
     companion object {
         fun create(context: Context): CatalogDatabase = Room.databaseBuilder(
             context.applicationContext,
             CatalogDatabase::class.java,
             "catalog-digital.db",
-        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5).build()
+        ).addMigrations(
+            MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
+        ).build()
 
         private val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(db: SupportSQLiteDatabase) {
@@ -66,6 +69,15 @@ abstract class CatalogDatabase : RoomDatabase() {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE `pending_operations` ADD COLUMN `entityId` TEXT")
                 db.execSQL("ALTER TABLE `customer_drafts` ADD COLUMN `status` TEXT NOT NULL DEFAULT 'pending'")
+            }
+        }
+
+        private val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS `business_documents` (`documentKey` TEXT NOT NULL, `entityType` TEXT NOT NULL, `entityId` TEXT NOT NULL, `version` INTEGER NOT NULL, `status` TEXT, `amountMinor` INTEGER, `occurredAt` TEXT NOT NULL, `encryptedData` BLOB NOT NULL, `dataIv` BLOB NOT NULL, PRIMARY KEY(`documentKey`))")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_business_documents_entityType` ON `business_documents` (`entityType`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_business_documents_status` ON `business_documents` (`status`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_business_documents_occurredAt` ON `business_documents` (`occurredAt`)")
             }
         }
     }

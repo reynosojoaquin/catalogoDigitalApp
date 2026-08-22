@@ -8,6 +8,7 @@ import com.catalogodigital.seller.CatalogApplication
 import com.catalogodigital.seller.data.OperationQueue
 import com.catalogodigital.seller.data.CatalogFeedRepository
 import com.catalogodigital.seller.data.SyncReconciliationRepository
+import com.catalogodigital.seller.data.BusinessFeedRepository
 import com.catalogodigital.seller.data.local.OperationStatus
 import com.catalogodigital.seller.security.DeviceIdentity
 import com.catalogodigital.seller.security.SessionStore
@@ -36,16 +37,30 @@ class SyncWorker(context: Context, parameters: WorkerParameters) : CoroutineWork
             val repository = CatalogFeedRepository(database)
             val feedClient = CatalogFeedApiClient(BuildConfig.API_BASE_URL, token)
             val deviceId = DeviceIdentity(applicationContext).id().toString()
-            var hasMore = true
+            var catalogHasMore = true
             var pageCount = 0
-            while (hasMore && pageCount < MAX_FEED_PAGES) {
+            while (catalogHasMore && pageCount < MAX_FEED_PAGES) {
                 val page = feedClient.changes(repository.cursor())
                 repository.apply(page)
-                feedClient.acknowledge(deviceId, page.nextCursor)
-                hasMore = page.hasMore
+                catalogHasMore = page.hasMore
                 pageCount += 1
             }
-            if (operations.size == SyncBatchPolicy.MAX_OPERATIONS || hasMore) Result.retry() else Result.success()
+
+            val businessRepository = BusinessFeedRepository(database)
+            val businessClient = BusinessFeedApiClient(BuildConfig.API_BASE_URL, token)
+            var businessHasMore = true
+            var businessPageCount = 0
+            while (businessHasMore && businessPageCount < MAX_FEED_PAGES) {
+                val page = businessClient.changes(businessRepository.cursor())
+                businessRepository.apply(page)
+                businessHasMore = page.hasMore
+                businessPageCount += 1
+            }
+            feedClient.acknowledge(deviceId, maxOf(repository.cursor(), businessRepository.cursor()))
+            if (
+                operations.size == SyncBatchPolicy.MAX_OPERATIONS ||
+                catalogHasMore || businessHasMore
+            ) Result.retry() else Result.success()
         } catch (error: Exception) {
             if (error is CancellationException) throw error
             operations.forEach { dao.updateResult(it.operationId, OperationStatus.PENDING, null) }
