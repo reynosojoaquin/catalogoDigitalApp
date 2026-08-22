@@ -16,6 +16,13 @@
     <TextView android:id="@+id/rejectedCount" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" />
 
     <com.google.android.material.button.MaterialButton
+        android:id="@+id/viewSyncIssues"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="@string/sync_issues_action" />
+
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/createCustomer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

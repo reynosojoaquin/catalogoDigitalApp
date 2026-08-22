@@ -63,8 +63,26 @@ class SyncWorker(context: Context, parameters: WorkerParameters) : CoroutineWork
             ) Result.retry() else Result.success()
         } catch (error: Exception) {
             if (error is CancellationException) throw error
-            operations.forEach { dao.updateResult(it.operationId, OperationStatus.PENDING, null) }
-            Result.retry()
+            when (
+                if (error is SyncTransportException) SyncFailurePolicy.action(error.statusCode)
+                else SyncFailureAction.RETRY
+            ) {
+                SyncFailureAction.AUTHENTICATION_REQUIRED -> {
+                    operations.forEach { dao.updateResult(it.operationId, OperationStatus.PENDING, null) }
+                    SessionStore(applicationContext).clear()
+                    Result.failure()
+                }
+                SyncFailureAction.REJECT_BATCH -> {
+                    operations.forEach {
+                        dao.updateResult(it.operationId, OperationStatus.REJECTED, "batch_rejected")
+                    }
+                    Result.failure()
+                }
+                SyncFailureAction.RETRY -> {
+                    operations.forEach { dao.updateResult(it.operationId, OperationStatus.PENDING, null) }
+                    Result.retry()
+                }
+            }
         }
     }
 

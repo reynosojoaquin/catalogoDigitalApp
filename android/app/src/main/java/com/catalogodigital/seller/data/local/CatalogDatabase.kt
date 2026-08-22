@@ -32,13 +32,9 @@ abstract class CatalogDatabase : RoomDatabase() {
             context.applicationContext,
             CatalogDatabase::class.java,
             "catalog-digital.db",
-        ).addMigrations(
-            MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
-            MIGRATION_6_7,
-            MIGRATION_7_8,
-        ).build()
+        ).addMigrations(*ALL_MIGRATIONS).build()
 
-        private val MIGRATION_1_2 = object : Migration(1, 2) {
+        val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("CREATE TABLE IF NOT EXISTS `customers` (`id` TEXT NOT NULL, `fullName` TEXT NOT NULL, `email` TEXT, `phone` TEXT, `isActive` INTEGER NOT NULL, `version` INTEGER NOT NULL, `updatedAt` TEXT NOT NULL, PRIMARY KEY(`id`))")
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_customers_fullName` ON `customers` (`fullName`)")
@@ -50,7 +46,7 @@ abstract class CatalogDatabase : RoomDatabase() {
             }
         }
 
-        private val MIGRATION_2_3 = object : Migration(2, 3) {
+        val MIGRATION_2_3 = object : Migration(2, 3) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("CREATE TABLE IF NOT EXISTS `customer_drafts` (`id` TEXT NOT NULL, `fullName` TEXT NOT NULL, `email` TEXT, `phone` TEXT, `identityFingerprint` BLOB, `createdAt` TEXT NOT NULL, PRIMARY KEY(`id`))")
                 db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_customer_drafts_email` ON `customer_drafts` (`email`)")
@@ -59,7 +55,7 @@ abstract class CatalogDatabase : RoomDatabase() {
             }
         }
 
-        private val MIGRATION_3_4 = object : Migration(3, 4) {
+        val MIGRATION_3_4 = object : Migration(3, 4) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("CREATE TABLE IF NOT EXISTS `order_drafts` (`id` TEXT NOT NULL, `customerId` TEXT NOT NULL, `status` TEXT NOT NULL, `totalMinor` INTEGER NOT NULL, `clientCreatedAt` TEXT NOT NULL, PRIMARY KEY(`id`))")
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_order_drafts_customerId` ON `order_drafts` (`customerId`)")
@@ -70,14 +66,14 @@ abstract class CatalogDatabase : RoomDatabase() {
             }
         }
 
-        private val MIGRATION_4_5 = object : Migration(4, 5) {
+        val MIGRATION_4_5 = object : Migration(4, 5) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE `pending_operations` ADD COLUMN `entityId` TEXT")
                 db.execSQL("ALTER TABLE `customer_drafts` ADD COLUMN `status` TEXT NOT NULL DEFAULT 'pending'")
             }
         }
 
-        private val MIGRATION_5_6 = object : Migration(5, 6) {
+        val MIGRATION_5_6 = object : Migration(5, 6) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("CREATE TABLE IF NOT EXISTS `business_documents` (`documentKey` TEXT NOT NULL, `entityType` TEXT NOT NULL, `entityId` TEXT NOT NULL, `version` INTEGER NOT NULL, `status` TEXT, `amountMinor` INTEGER, `occurredAt` TEXT NOT NULL, `encryptedData` BLOB NOT NULL, `dataIv` BLOB NOT NULL, PRIMARY KEY(`documentKey`))")
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_business_documents_entityType` ON `business_documents` (`entityType`)")
@@ -86,7 +82,7 @@ abstract class CatalogDatabase : RoomDatabase() {
             }
         }
 
-        private val MIGRATION_6_7 = object : Migration(6, 7) {
+        val MIGRATION_6_7 = object : Migration(6, 7) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE `business_documents` ADD COLUMN `parentId` TEXT")
                 db.execSQL("ALTER TABLE `business_documents` ADD COLUMN `displayLabel` TEXT")
@@ -97,7 +93,7 @@ abstract class CatalogDatabase : RoomDatabase() {
             }
         }
 
-        private val MIGRATION_7_8 = object : Migration(7, 8) {
+        val MIGRATION_7_8 = object : Migration(7, 8) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("CREATE TABLE IF NOT EXISTS `return_drafts` (`id` TEXT NOT NULL, `invoiceId` TEXT NOT NULL, `status` TEXT NOT NULL, `totalMinor` INTEGER NOT NULL, `commissionTotalMinor` INTEGER NOT NULL, `clientReportedAt` TEXT NOT NULL, PRIMARY KEY(`id`))")
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_return_drafts_invoiceId` ON `return_drafts` (`invoiceId`)")
@@ -107,5 +103,15 @@ abstract class CatalogDatabase : RoomDatabase() {
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_return_draft_items_invoiceItemId` ON `return_draft_items` (`invoiceItemId`)")
             }
         }
+
+        val ALL_MIGRATIONS = arrayOf(
+            MIGRATION_1_2,
+            MIGRATION_2_3,
+            MIGRATION_3_4,
+            MIGRATION_4_5,
+            MIGRATION_5_6,
+            MIGRATION_6_7,
+            MIGRATION_7_8,
+        )
     }
 }

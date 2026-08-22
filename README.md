@@ -27,6 +27,17 @@ docker compose -f compose.test.yaml down --volumes
 
 La base de datos de pruebas es efímera y no contiene información de ejemplo en el código de ejecución.
 
+### Android
+
+La URL de la API se configura mediante `CATALOG_API_BASE_URL`; no se incorpora al código fuente. Para verificar la aplicación:
+
+```powershell
+cd android
+.\gradlew.bat testDebugUnitTest lintDebug assembleDebug assembleDebugAndroidTest
+```
+
+Con un emulador o dispositivo conectado, ejecutar además `.\gradlew.bat connectedDebugAndroidTest`. Esta prueba recorre las migraciones Room desde la versión 1 hasta la 8 y comprueba que la cola offline se conserva.
+
 ## Producción
 
 1. Crear `.env.production` a partir de `.env.production.example` con secretos aleatorios y el dominio real.

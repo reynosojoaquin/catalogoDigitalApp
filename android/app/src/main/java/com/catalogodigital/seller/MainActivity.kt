@@ -37,6 +37,9 @@ class MainActivity : ComponentActivity() {
         binding.createReturn.setOnClickListener {
             startActivity(Intent(this, ReturnCreateActivity::class.java))
         }
+        binding.viewSyncIssues.setOnClickListener {
+            startActivity(Intent(this, SyncIssuesActivity::class.java))
+        }
 
         binding.syncNow.setOnClickListener {
             if (BuildConfig.API_BASE_URL.isBlank()) {
