@@ -24,5 +24,8 @@
         <activity
             android:name=".CustomerCreateActivity"
             android:exported="false" />
+        <activity
+            android:name=".OrderCreateActivity"
+            android:exported="false" />
     </application>
 </manifest>

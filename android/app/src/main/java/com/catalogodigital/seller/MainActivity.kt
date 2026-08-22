@@ -25,6 +25,9 @@ class MainActivity : ComponentActivity() {
         binding.createCustomer.setOnClickListener {
             startActivity(Intent(this, CustomerCreateActivity::class.java))
         }
+        binding.createOrder.setOnClickListener {
+            startActivity(Intent(this, OrderCreateActivity::class.java))
+        }
 
         binding.syncNow.setOnClickListener {
             if (BuildConfig.API_BASE_URL.isBlank()) {

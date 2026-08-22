@@ -10,9 +10,10 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 @Database(
     entities = [
         PendingOperation::class, SyncCursor::class, CustomerEntity::class,
-        ProductEntity::class, CustomerDraftEntity::class,
+        ProductEntity::class, CustomerDraftEntity::class, OrderDraftEntity::class,
+        OrderDraftItemEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
 )
 abstract class CatalogDatabase : RoomDatabase() {
@@ -20,13 +21,14 @@ abstract class CatalogDatabase : RoomDatabase() {
     abstract fun catalogDao(): CatalogDao
     abstract fun syncCursorDao(): SyncCursorDao
     abstract fun customerDraftDao(): CustomerDraftDao
+    abstract fun orderDraftDao(): OrderDraftDao
 
     companion object {
         fun create(context: Context): CatalogDatabase = Room.databaseBuilder(
             context.applicationContext,
             CatalogDatabase::class.java,
             "catalog-digital.db",
-        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3).build()
+        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4).build()
 
         private val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(db: SupportSQLiteDatabase) {
@@ -46,6 +48,17 @@ abstract class CatalogDatabase : RoomDatabase() {
                 db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_customer_drafts_email` ON `customer_drafts` (`email`)")
                 db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_customer_drafts_phone` ON `customer_drafts` (`phone`)")
                 db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_customer_drafts_identityFingerprint` ON `customer_drafts` (`identityFingerprint`)")
+            }
+        }
+
+        private val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS `order_drafts` (`id` TEXT NOT NULL, `customerId` TEXT NOT NULL, `status` TEXT NOT NULL, `totalMinor` INTEGER NOT NULL, `clientCreatedAt` TEXT NOT NULL, PRIMARY KEY(`id`))")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_order_drafts_customerId` ON `order_drafts` (`customerId`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_order_drafts_status` ON `order_drafts` (`status`)")
+                db.execSQL("CREATE TABLE IF NOT EXISTS `order_draft_items` (`orderId` TEXT NOT NULL, `productId` TEXT NOT NULL, `productSku` TEXT NOT NULL, `productName` TEXT NOT NULL, `unitPriceMinor` INTEGER NOT NULL, `unitCommissionMinor` INTEGER NOT NULL, `quantity` INTEGER NOT NULL, `lineTotalMinor` INTEGER NOT NULL, PRIMARY KEY(`orderId`, `productId`), FOREIGN KEY(`orderId`) REFERENCES `order_drafts`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT )")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_order_draft_items_orderId` ON `order_draft_items` (`orderId`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_order_draft_items_productId` ON `order_draft_items` (`productId`)")
             }
         }
     }

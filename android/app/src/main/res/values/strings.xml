@@ -22,4 +22,19 @@
     <string name="customer_invalid">Completa el nombre y al menos un dato de contacto o identificación.</string>
     <string name="customer_duplicate">Ya existe un cliente local con esos datos.</string>
     <string name="customer_save_failed">No fue posible guardar el cliente.</string>
+    <string name="order_create_title">Nuevo pedido</string>
+    <string name="order_customer">Cliente</string>
+    <string name="order_product">Producto</string>
+    <string name="order_quantity">Cantidad</string>
+    <string name="order_add_item">Agregar producto</string>
+    <string name="order_clear_items">Limpiar productos</string>
+    <string name="order_save">Guardar pedido sin conexión</string>
+    <string name="order_saved">Pedido guardado y pendiente de sincronización.</string>
+    <string name="order_invalid">Selecciona un cliente y agrega productos con cantidades válidas.</string>
+    <string name="order_product_duplicate">El producto ya está incluido en el pedido.</string>
+    <string name="order_catalog_empty">Sincroniza clientes y productos activos antes de crear un pedido.</string>
+    <string name="order_save_failed">No fue posible guardar el pedido.</string>
+    <string name="order_line_format">%1$s × %2$d — %3$s</string>
+    <string name="order_total_format">Total provisional: %1$s</string>
+    <string name="order_product_format">%1$s — %2$s</string>
 </resources>

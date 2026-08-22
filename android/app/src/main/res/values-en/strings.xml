@@ -22,4 +22,19 @@
     <string name="customer_invalid">Enter the name and at least one contact or identity value.</string>
     <string name="customer_duplicate">A local customer already has those details.</string>
     <string name="customer_save_failed">Unable to save the customer.</string>
+    <string name="order_create_title">New order</string>
+    <string name="order_customer">Customer</string>
+    <string name="order_product">Product</string>
+    <string name="order_quantity">Quantity</string>
+    <string name="order_add_item">Add product</string>
+    <string name="order_clear_items">Clear products</string>
+    <string name="order_save">Save order offline</string>
+    <string name="order_saved">Order saved and pending synchronization.</string>
+    <string name="order_invalid">Select a customer and add products with valid quantities.</string>
+    <string name="order_product_duplicate">The product is already included in the order.</string>
+    <string name="order_catalog_empty">Synchronize active customers and products before creating an order.</string>
+    <string name="order_save_failed">Unable to save the order.</string>
+    <string name="order_line_format">%1$s × %2$d — %3$s</string>
+    <string name="order_total_format">Provisional total: %1$s</string>
+    <string name="order_product_format">%1$s — %2$s</string>
 </resources>
