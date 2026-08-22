@@ -10,6 +10,7 @@ def env_bool(name: str, default: bool = False) -> bool:
 
 
 SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
+PII_HASH_KEY = os.environ["PII_HASH_KEY"]
 DEBUG = env_bool("DJANGO_DEBUG")
 ALLOWED_HOSTS = [value.strip() for value in os.getenv("DJANGO_ALLOWED_HOSTS", "").split(",") if value.strip()]
 
@@ -25,6 +26,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "accounts",
     "audit",
+    "catalog",
 ]
 
 MIDDLEWARE = [
@@ -56,11 +58,11 @@ TEMPLATES = [{
 
 DATABASES = {"default": {
     "ENGINE": "django.db.backends.postgresql",
-    "NAME": os.getenv("POSTGRES_DB", "catalog"),
-    "USER": os.getenv("POSTGRES_USER", "catalog"),
-    "PASSWORD": os.getenv("POSTGRES_PASSWORD", "catalog"),
-    "HOST": os.getenv("POSTGRES_HOST", "db"),
-    "PORT": os.getenv("POSTGRES_PORT", "5432"),
+    "NAME": os.environ["POSTGRES_DB"],
+    "USER": os.environ["POSTGRES_USER"],
+    "PASSWORD": os.environ["POSTGRES_PASSWORD"],
+    "HOST": os.environ["POSTGRES_HOST"],
+    "PORT": os.environ["POSTGRES_PORT"],
 }}
 
 AUTH_PASSWORD_VALIDATORS = [
