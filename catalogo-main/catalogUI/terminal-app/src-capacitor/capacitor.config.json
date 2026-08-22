@@ -1,7 +1,0 @@
-{
-  "appId": "com.lotery.terminal",
-  "appName": "lotery_terminal",
-  "bundledWebRuntime": false,
-  "npmClient": "npm",
-  "webDir": "www"
-}
