@@ -8,7 +8,10 @@ from rest_framework.test import APITestCase
 
 from accounts.models import Device, UserProfile
 from catalog.models import Customer, Product
-from sales.models import Order
+from sales.models import Order, OrderItem
+from fulfillment.models import Delivery, Invoice, InvoiceItem
+from payments.models import PaymentReport
+from returns.models import ReturnReport
 
 from .models import SyncChange, SyncDeviceCursor, SyncOperationReceipt
 
@@ -48,6 +51,40 @@ class OfflineSyncApiTests(APITestCase):
         }
         payload.update(overrides)
         return payload
+
+    def create_invoice(self, status=Invoice.Status.UNPAID):
+        product = Product.objects.create(
+            sku=str(uuid.uuid4()), name="Product", price=Decimal("25.00"),
+            commission_amount=Decimal("2.00"),
+        )
+        customer = Customer.objects.create(
+            full_name="Customer", email=f"{uuid.uuid4()}@example.test", created_by=self.seller,
+        )
+        order = Order.objects.create(
+            seller=self.seller, customer=customer, device=self.device, total=Decimal("50.00"),
+            idempotency_key=uuid.uuid4(), request_hash="d" * 64, client_created_at=timezone.now(),
+        )
+        order_item = OrderItem.objects.create(
+            order=order, product=product, product_sku=product.sku, product_name=product.name,
+            unit_price=product.price, unit_commission=product.commission_amount,
+            quantity=2, line_total=Decimal("50.00"),
+        )
+        delivery = Delivery.objects.create(
+            order=order, confirmed_by=self.seller, delivered_at=timezone.now(),
+            idempotency_key=uuid.uuid4(), request_hash="e" * 64,
+        )
+        invoice = Invoice.objects.create(
+            delivery=delivery, order=order, seller=self.seller,
+            customer_id_snapshot=customer.id, customer_name=customer.full_name,
+            customer_email=customer.email, status=status, total=Decimal("50.00"),
+        )
+        invoice_item = InvoiceItem.objects.create(
+            invoice=invoice, order_item=order_item, product_id_snapshot=product.id,
+            product_sku=product.sku, product_name=product.name,
+            unit_price=product.price, unit_commission=product.commission_amount,
+            quantity=2, line_total=Decimal("50.00"),
+        )
+        return invoice, invoice_item
 
     def test_customer_uuid_is_preserved_and_receipt_has_no_sensitive_payload(self):
         payload = self.operation_payload()
@@ -238,6 +275,49 @@ class OfflineSyncApiTests(APITestCase):
         self.assertEqual(receipt.status, SyncOperationReceipt.Status.REJECTED)
         self.assertEqual(receipt.conflict_code, "invalid_payload")
         self.assertFalse(hasattr(receipt, "payload"))
+
+    def test_batch_applies_total_cash_payment_report(self):
+        invoice, _item = self.create_invoice()
+        report_id = uuid.uuid4()
+        operation = {
+            "operation_id": str(uuid.uuid4()), "operation_type": "payment_create",
+            "idempotency_key": str(uuid.uuid4()), "client_timestamp": timezone.now().isoformat(),
+            "client_version": 1,
+            "payload": {
+                "id": str(report_id), "invoice_id": str(invoice.id), "method": "cash",
+                "client_reported_at": timezone.now().isoformat(),
+            },
+        }
+
+        response = self.client.post(
+            self.batch_url, {"device_id": str(self.device.id), "operations": [operation]}, format="json"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["results"][0]["status"], SyncOperationReceipt.Status.APPLIED)
+        self.assertEqual(PaymentReport.objects.get(pk=report_id).amount, invoice.total)
+
+    def test_batch_applies_return_from_paid_invoice(self):
+        invoice, invoice_item = self.create_invoice(status=Invoice.Status.PAID)
+        report_id = uuid.uuid4()
+        operation = {
+            "operation_id": str(uuid.uuid4()), "operation_type": "return_create",
+            "idempotency_key": str(uuid.uuid4()), "client_timestamp": timezone.now().isoformat(),
+            "client_version": 1,
+            "payload": {
+                "id": str(report_id), "invoice_id": str(invoice.id),
+                "client_reported_at": timezone.now().isoformat(),
+                "items": [{"invoice_item_id": str(invoice_item.id), "quantity": 1}],
+            },
+        }
+
+        response = self.client.post(
+            self.batch_url, {"device_id": str(self.device.id), "operations": [operation]}, format="json"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["results"][0]["status"], SyncOperationReceipt.Status.APPLIED)
+        self.assertEqual(ReturnReport.objects.get(pk=report_id).total, Decimal("25.00"))
 
     def test_batch_retry_reuses_receipts_without_duplicate_entities(self):
         operation = {

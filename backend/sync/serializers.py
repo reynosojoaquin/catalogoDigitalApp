@@ -79,7 +79,9 @@ class SyncOrderDataSerializer(serializers.Serializer):
 
 class SyncBatchOperationSerializer(serializers.Serializer):
     operation_id = serializers.UUIDField()
-    operation_type = serializers.ChoiceField(choices=("customer_create", "order_create"))
+    operation_type = serializers.ChoiceField(choices=(
+        "customer_create", "order_create", "payment_create", "return_create",
+    ))
     idempotency_key = serializers.UUIDField()
     client_timestamp = serializers.DateTimeField()
     client_version = serializers.IntegerField(min_value=1)

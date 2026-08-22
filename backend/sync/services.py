@@ -15,8 +15,12 @@ from fulfillment.models import Invoice
 from fulfillment.serializers import InvoiceSerializer
 from payments.models import CommissionMovement, PaymentReport
 from payments.serializers import CommissionMovementSerializer, PaymentReportSerializer
+from payments.services import (
+    InvoiceNotPayableError, PaymentIdempotencyConflictError, report_payment,
+)
 from returns.models import ReturnReport
 from returns.serializers import ReturnReportSerializer
+from returns.services import ReturnConflictError, report_return
 from settlements.models import CommissionSettlement
 from settlements.serializers import SettlementSerializer
 
@@ -146,6 +150,89 @@ def sync_order_create(
         idempotency_key=idempotency_key, request_hash=request_hash,
         client_timestamp=client_timestamp, client_version=client_version,
         status=SyncOperationReceipt.Status.APPLIED, entity_id=result.order.id,
+    )
+    return receipt, True
+
+
+@transaction.atomic
+def sync_payment_create(
+    *, actor, device, operation_id, idempotency_key, client_timestamp, client_version,
+    report_id, invoice_id, method, terminal_reference, client_reported_at, correlation_id,
+):
+    request_hash = operation_request_hash({
+        "operation_id": operation_id, "operation_type": "payment_create",
+        "client_timestamp": client_timestamp, "client_version": client_version,
+        "report_id": report_id, "invoice_id": invoice_id, "method": method,
+        "terminal_reference": terminal_reference, "client_reported_at": client_reported_at,
+    })
+    replay = find_replayed_receipt(
+        actor=actor, operation_id=operation_id, idempotency_key=idempotency_key,
+        request_hash=request_hash,
+    )
+    if replay:
+        return replay, False
+    try:
+        result = report_payment(
+            actor=actor, report_id=report_id, invoice_id=invoice_id, device_id=device.id,
+            method=method, terminal_reference=terminal_reference,
+            client_reported_at=client_reported_at, idempotency_key=idempotency_key,
+            correlation_id=correlation_id,
+        )
+        status_value = SyncOperationReceipt.Status.APPLIED
+        conflict_code = ""
+        entity_id = result.instance.id
+    except InvoiceNotPayableError:
+        status_value = SyncOperationReceipt.Status.CONFLICT
+        conflict_code = "invoice_not_payable"
+        entity_id = report_id
+    except PaymentIdempotencyConflictError:
+        status_value = SyncOperationReceipt.Status.CONFLICT
+        conflict_code = "payment_idempotency_conflict"
+        entity_id = report_id
+    receipt = SyncOperationReceipt.objects.create(
+        operation_id=operation_id, seller=actor, device=device, entity_type="payment",
+        idempotency_key=idempotency_key, request_hash=request_hash,
+        client_timestamp=client_timestamp, client_version=client_version,
+        status=status_value, entity_id=entity_id, conflict_code=conflict_code,
+    )
+    return receipt, True
+
+
+@transaction.atomic
+def sync_return_create(
+    *, actor, device, operation_id, idempotency_key, client_timestamp, client_version,
+    report_id, invoice_id, client_reported_at, items, correlation_id,
+):
+    request_hash = operation_request_hash({
+        "operation_id": operation_id, "operation_type": "return_create",
+        "client_timestamp": client_timestamp, "client_version": client_version,
+        "report_id": report_id, "invoice_id": invoice_id,
+        "client_reported_at": client_reported_at, "items": items,
+    })
+    replay = find_replayed_receipt(
+        actor=actor, operation_id=operation_id, idempotency_key=idempotency_key,
+        request_hash=request_hash,
+    )
+    if replay:
+        return replay, False
+    try:
+        result = report_return(
+            actor=actor, report_id=report_id, invoice_id=invoice_id, device_id=device.id,
+            client_reported_at=client_reported_at, items=items,
+            idempotency_key=idempotency_key, correlation_id=correlation_id,
+        )
+        status_value = SyncOperationReceipt.Status.APPLIED
+        conflict_code = ""
+        entity_id = result.instance.id
+    except ReturnConflictError:
+        status_value = SyncOperationReceipt.Status.CONFLICT
+        conflict_code = "return_conflict"
+        entity_id = report_id
+    receipt = SyncOperationReceipt.objects.create(
+        operation_id=operation_id, seller=actor, device=device, entity_type="return",
+        idempotency_key=idempotency_key, request_hash=request_hash,
+        client_timestamp=client_timestamp, client_version=client_version,
+        status=status_value, entity_id=entity_id, conflict_code=conflict_code,
     )
     return receipt, True
 

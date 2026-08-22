@@ -4,6 +4,8 @@ from rest_framework import generics, status
 from rest_framework.exceptions import APIException, ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from payments.serializers import PaymentReportCreateSerializer
+from returns.serializers import ReturnReportCreateSerializer
 
 from accounts.models import Device
 from accounts.permissions import IsSeller
@@ -16,7 +18,7 @@ from .serializers import (
 )
 from .services import (
     SyncIdempotencyConflictError, record_rejected_operation, serialize_business_change, serialize_change,
-    sync_customer_create, sync_order_create,
+    sync_customer_create, sync_order_create, sync_payment_create, sync_return_create,
 )
 
 
@@ -151,12 +153,16 @@ class SyncBatchView(generics.GenericAPIView):
         return Response({"results": results, "counts": counts})
 
     def process_operation(self, request, device, operation):
-        payload_serializer_class = (
-            SyncCustomerDataSerializer
-            if operation["operation_type"] == "customer_create"
-            else SyncOrderDataSerializer
-        )
-        payload_serializer = payload_serializer_class(data=operation["payload"])
+        payload_serializer_classes = {
+            "customer_create": SyncCustomerDataSerializer,
+            "order_create": SyncOrderDataSerializer,
+            "payment_create": PaymentReportCreateSerializer,
+            "return_create": ReturnReportCreateSerializer,
+        }
+        payload = operation["payload"]
+        if operation["operation_type"] in ("payment_create", "return_create"):
+            payload = {**payload, "device_id": str(device.id)}
+        payload_serializer = payload_serializer_classes[operation["operation_type"]](data=payload)
         if operation["client_version"] != 1 or not payload_serializer.is_valid():
             try:
                 receipt, _created = record_rejected_operation(
@@ -181,7 +187,7 @@ class SyncBatchView(generics.GenericAPIView):
                     identity_document=values.get("identity_document"),
                     correlation_id=request.correlation_id,
                 )
-            else:
+            elif operation["operation_type"] == "order_create":
                 receipt, _created = sync_order_create(
                     actor=request.user, device=device,
                     operation_id=operation["operation_id"],
@@ -190,6 +196,30 @@ class SyncBatchView(generics.GenericAPIView):
                     client_version=operation["client_version"],
                     order_id=values["id"], customer_id=values["customer_id"],
                     client_created_at=values["client_created_at"], items=values["items"],
+                    correlation_id=request.correlation_id,
+                )
+            elif operation["operation_type"] == "payment_create":
+                receipt, _created = sync_payment_create(
+                    actor=request.user, device=device,
+                    operation_id=operation["operation_id"],
+                    idempotency_key=operation["idempotency_key"],
+                    client_timestamp=operation["client_timestamp"],
+                    client_version=operation["client_version"],
+                    report_id=values["id"], invoice_id=values["invoice_id"],
+                    method=values["method"],
+                    terminal_reference=values["external_terminal_reference"],
+                    client_reported_at=values["client_reported_at"],
+                    correlation_id=request.correlation_id,
+                )
+            else:
+                receipt, _created = sync_return_create(
+                    actor=request.user, device=device,
+                    operation_id=operation["operation_id"],
+                    idempotency_key=operation["idempotency_key"],
+                    client_timestamp=operation["client_timestamp"],
+                    client_version=operation["client_version"],
+                    report_id=values["id"], invoice_id=values["invoice_id"],
+                    client_reported_at=values["client_reported_at"], items=values["items"],
                     correlation_id=request.correlation_id,
                 )
             return SyncReceiptSerializer(receipt).data
