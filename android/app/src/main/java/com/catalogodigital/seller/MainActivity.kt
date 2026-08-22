@@ -1,8 +1,10 @@
 package com.catalogodigital.seller
 
 import android.os.Bundle
+import android.content.Intent
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
 import com.catalogodigital.seller.data.local.OperationStatus
 import com.catalogodigital.seller.databinding.ActivityMainBinding
@@ -11,6 +13,9 @@ import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private lateinit var binding: ActivityMainBinding
+    private val login = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == RESULT_OK) SyncScheduler.runNow(this)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -20,6 +25,8 @@ class MainActivity : ComponentActivity() {
         binding.syncNow.setOnClickListener {
             if (BuildConfig.API_BASE_URL.isBlank()) {
                 Toast.makeText(this, R.string.sync_configuration_missing, Toast.LENGTH_LONG).show()
+            } else if (com.catalogodigital.seller.security.SessionStore(this).token().isNullOrBlank()) {
+                login.launch(Intent(this, LoginActivity::class.java))
             } else {
                 SyncScheduler.runNow(this)
             }

@@ -12,7 +12,7 @@ $env:CATALOG_API_BASE_URL = "https://your-api-host"
 
 También puede definirse `CATALOG_API_BASE_URL` en `android/local.properties`, que está excluido de Git. La aplicación rechaza tráfico HTTP, incluido en desarrollo; el backend local debe publicarse mediante un proxy HTTPS de confianza.
 
-El token de sesión se obtiene del endpoint `/api/auth/token/` y debe entregarse a `SessionStore.saveToken` desde el futuro flujo de inicio de sesión. Se guarda cifrado con Android Keystore; nunca debe incorporarse a BuildConfig, recursos ni archivos versionados.
+El inicio de sesión obtiene el token mediante `/api/auth/token/` y registra un UUID persistente en `/api/devices/register/`. El token se guarda cifrado con Android Keystore y la contraseña se conserva solamente durante la solicitud; nunca deben incorporarse credenciales a BuildConfig, recursos ni archivos versionados.
 
 ## Estado de esta fase
 
@@ -22,5 +22,6 @@ El token de sesión se obtiene del endpoint `/api/auth/token/` y debe entregarse
 - Reintento con restricciones de red y recuperación de trabajo interrumpido.
 - Estados internos estables y resumen visible de pendientes, conflictos y rechazos.
 - Recursos traducibles en español e inglés, con tema claro, oscuro y automático.
+- Inicio de sesión y registro idempotente del dispositivo sin credenciales embebidas.
 
-La siguiente fase debe implementar autenticación/registro del dispositivo y las tablas locales de clientes, productos y pedidos antes de conectar las pantallas de captura.
+La siguiente fase debe implementar las tablas locales de clientes, productos y pedidos antes de conectar las pantallas de captura.

@@ -6,4 +6,10 @@
     <string name="sync_rejected">Rechazadas: %1$d</string>
     <string name="sync_now">Sincronizar ahora</string>
     <string name="sync_configuration_missing">Configura la dirección de la API antes de sincronizar.</string>
+    <string name="login_title">Iniciar sesión</string>
+    <string name="username">Usuario</string>
+    <string name="password">Contraseña</string>
+    <string name="login_action">Entrar</string>
+    <string name="login_failed">No fue posible iniciar sesión. Verifica tus datos y la conexión.</string>
+    <string name="login_required">Inicia sesión para sincronizar.</string>
 </resources>

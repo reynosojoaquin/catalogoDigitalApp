@@ -9,6 +9,7 @@ import com.catalogodigital.seller.data.OperationQueue
 import com.catalogodigital.seller.data.local.OperationStatus
 import com.catalogodigital.seller.security.SessionStore
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.withContext
 
 class SyncWorker(context: Context, parameters: WorkerParameters) : CoroutineWorker(context, parameters) {
@@ -29,7 +30,8 @@ class SyncWorker(context: Context, parameters: WorkerParameters) : CoroutineWork
             val results = SyncApiClient(BuildConfig.API_BASE_URL, token).push(operations, queue)
             results.forEach { dao.updateResult(it.operationId, it.status, it.conflictCode) }
             if (operations.size == BATCH_SIZE) Result.retry() else Result.success()
-        } catch (_: Exception) {
+        } catch (error: Exception) {
+            if (error is CancellationException) throw error
             operations.forEach { dao.updateResult(it.operationId, OperationStatus.PENDING, null) }
             Result.retry()
         }

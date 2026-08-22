@@ -6,4 +6,10 @@
     <string name="sync_rejected">Rejected: %1$d</string>
     <string name="sync_now">Sync now</string>
     <string name="sync_configuration_missing">Configure the API address before synchronizing.</string>
+    <string name="login_title">Sign in</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="login_action">Sign in</string>
+    <string name="login_failed">Unable to sign in. Check your credentials and connection.</string>
+    <string name="login_required">Sign in to synchronize.</string>
 </resources>
