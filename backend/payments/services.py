@@ -157,6 +157,8 @@ def confirm_payment(
                     invoice=invoice,
                     invoice_item=item,
                     payment_confirmation=confirmation,
+                    reference_type="payment_confirmation",
+                    reference_id=confirmation.id,
                     movement_type=CommissionMovement.MovementType.CREDIT,
                     amount=item.unit_commission * item.quantity,
                 )

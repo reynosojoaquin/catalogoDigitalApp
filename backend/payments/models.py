@@ -91,6 +91,8 @@ class CommissionMovement(models.Model):
         on_delete=models.PROTECT,
         related_name="commission_movements",
     )
+    reference_type = models.CharField(max_length=30, default="payment_confirmation")
+    reference_id = models.UUIDField()
     movement_type = models.CharField(max_length=10, choices=MovementType.choices)
     amount = models.DecimalField(max_digits=14, decimal_places=2)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.AVAILABLE, db_index=True)
