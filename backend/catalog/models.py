@@ -28,6 +28,13 @@ class Customer(models.Model):
     def __str__(self):
         return self.full_name
 
+    def save(self, *args, **kwargs):
+        if not self._state.adding:
+            self.version += 1
+            if kwargs.get("update_fields") is not None:
+                kwargs["update_fields"] = set(kwargs["update_fields"]) | {"version"}
+        return super().save(*args, **kwargs)
+
 
 class Product(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -54,6 +61,10 @@ class Product(models.Model):
 
     def save(self, *args, **kwargs):
         self.sku = self.sku.strip().upper()
+        if not self._state.adding:
+            self.version += 1
+            if kwargs.get("update_fields") is not None:
+                kwargs["update_fields"] = set(kwargs["update_fields"]) | {"version"}
         return super().save(*args, **kwargs)
 
     def __str__(self):

@@ -43,7 +43,9 @@ def fingerprint_identity_document(value):
 
 
 @transaction.atomic
-def create_customer(*, actor, full_name, email, phone, identity_document, correlation_id):
+def create_customer(
+    *, actor, full_name, email, phone, identity_document, correlation_id, customer_id=None,
+):
     normalized_email = normalize_email(email)
     normalized_phone = normalize_phone(phone)
     document_hash = fingerprint_identity_document(identity_document)
@@ -58,12 +60,17 @@ def create_customer(*, actor, full_name, email, phone, identity_document, correl
             raise DuplicateCustomerError
 
     try:
+        customer_values = {
+            "full_name": " ".join(full_name.split()),
+            "email": normalized_email,
+            "phone": normalized_phone,
+            "identity_document_hash": document_hash,
+            "created_by": actor,
+        }
+        if customer_id is not None:
+            customer_values["id"] = customer_id
         customer = Customer.objects.create(
-            full_name=" ".join(full_name.split()),
-            email=normalized_email,
-            phone=normalized_phone,
-            identity_document_hash=document_hash,
-            created_by=actor,
+            **customer_values,
         )
     except IntegrityError as error:
         raise DuplicateCustomerError from error

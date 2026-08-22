@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     "payments",
     "returns",
     "settlements",
+    "sync",
 ]
 
 MIDDLEWARE = [
