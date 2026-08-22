@@ -56,4 +56,16 @@
     <string name="status_available">Available</string>
     <string name="status_settled">Settled</string>
     <string name="status_unknown">Status unavailable</string>
+    <string name="payment_create_title">Report payment</string>
+    <string name="payment_invoice">Invoice</string>
+    <string name="payment_method">Method</string>
+    <string name="payment_method_cash">Cash</string>
+    <string name="payment_method_terminal">External card terminal</string>
+    <string name="payment_terminal_reference">Terminal reference</string>
+    <string name="payment_save">Save payment offline</string>
+    <string name="payment_saved">Full payment reported and pending synchronization.</string>
+    <string name="payment_no_invoices">No invoices are available for payment reporting.</string>
+    <string name="payment_invalid">Check the method and terminal reference.</string>
+    <string name="payment_save_failed">Unable to save the payment report.</string>
+    <string name="payment_invoice_format">%1$s — %2$s</string>
 </resources>

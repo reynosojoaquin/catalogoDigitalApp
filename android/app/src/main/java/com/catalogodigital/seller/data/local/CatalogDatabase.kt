@@ -11,9 +11,9 @@ import androidx.sqlite.db.SupportSQLiteDatabase
     entities = [
         PendingOperation::class, SyncCursor::class, CustomerEntity::class,
         ProductEntity::class, CustomerDraftEntity::class, OrderDraftEntity::class,
-        OrderDraftItemEntity::class, BusinessDocumentEntity::class,
+        OrderDraftItemEntity::class, BusinessDocumentEntity::class, PaymentDraftEntity::class,
     ],
-    version = 6,
+    version = 7,
     exportSchema = true,
 )
 abstract class CatalogDatabase : RoomDatabase() {
@@ -23,6 +23,7 @@ abstract class CatalogDatabase : RoomDatabase() {
     abstract fun customerDraftDao(): CustomerDraftDao
     abstract fun orderDraftDao(): OrderDraftDao
     abstract fun businessDocumentDao(): BusinessDocumentDao
+    abstract fun paymentDraftDao(): PaymentDraftDao
 
     companion object {
         fun create(context: Context): CatalogDatabase = Room.databaseBuilder(
@@ -31,6 +32,7 @@ abstract class CatalogDatabase : RoomDatabase() {
             "catalog-digital.db",
         ).addMigrations(
             MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
+            MIGRATION_6_7,
         ).build()
 
         private val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -78,6 +80,17 @@ abstract class CatalogDatabase : RoomDatabase() {
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_business_documents_entityType` ON `business_documents` (`entityType`)")
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_business_documents_status` ON `business_documents` (`status`)")
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_business_documents_occurredAt` ON `business_documents` (`occurredAt`)")
+            }
+        }
+
+        private val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `business_documents` ADD COLUMN `parentId` TEXT")
+                db.execSQL("ALTER TABLE `business_documents` ADD COLUMN `displayLabel` TEXT")
+                db.execSQL("CREATE TABLE IF NOT EXISTS `payment_drafts` (`id` TEXT NOT NULL, `invoiceId` TEXT NOT NULL, `method` TEXT NOT NULL, `status` TEXT NOT NULL, `amountMinor` INTEGER NOT NULL, `clientReportedAt` TEXT NOT NULL, PRIMARY KEY(`id`))")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_payment_drafts_invoiceId` ON `payment_drafts` (`invoiceId`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_payment_drafts_status` ON `payment_drafts` (`status`)")
+                db.execSQL("UPDATE `sync_cursors` SET `sequence` = 0 WHERE `feed` = 'business'")
             }
         }
     }

@@ -30,6 +30,13 @@
         android:text="@string/order_create_title" />
 
     <com.google.android.material.button.MaterialButton
+        android:id="@+id/createPayment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="@string/payment_create_title" />
+
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/viewOperations"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

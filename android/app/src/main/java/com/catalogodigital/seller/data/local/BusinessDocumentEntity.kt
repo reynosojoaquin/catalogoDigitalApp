@@ -12,6 +12,8 @@ data class BusinessDocumentEntity(
     @PrimaryKey val documentKey: String,
     val entityType: String,
     val entityId: String,
+    val parentId: String?,
+    val displayLabel: String?,
     val version: Long,
     val status: String?,
     val amountMinor: Long?,

@@ -56,4 +56,16 @@
     <string name="status_available">Disponible</string>
     <string name="status_settled">Liquidado</string>
     <string name="status_unknown">Estado no disponible</string>
+    <string name="payment_create_title">Reportar pago</string>
+    <string name="payment_invoice">Factura</string>
+    <string name="payment_method">Método</string>
+    <string name="payment_method_cash">Efectivo</string>
+    <string name="payment_method_terminal">Terminal de tarjeta externa</string>
+    <string name="payment_terminal_reference">Referencia de la terminal</string>
+    <string name="payment_save">Guardar pago sin conexión</string>
+    <string name="payment_saved">Pago total reportado y pendiente de sincronización.</string>
+    <string name="payment_no_invoices">No hay facturas disponibles para reportar pago.</string>
+    <string name="payment_invalid">Verifica el método y la referencia de la terminal.</string>
+    <string name="payment_save_failed">No fue posible guardar el reporte de pago.</string>
+    <string name="payment_invoice_format">%1$s — %2$s</string>
 </resources>

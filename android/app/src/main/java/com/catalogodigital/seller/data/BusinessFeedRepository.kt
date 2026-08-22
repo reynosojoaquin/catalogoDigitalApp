@@ -32,10 +32,23 @@ class BusinessFeedRepository(
                 val amount = if (data.has(amountField) && !data.isNull(amountField)) {
                     MoneyParser.toMinorUnits(data.getString(amountField))
                 } else null
+                val parentField = when (change.entityType) {
+                    "order" -> "customer_id"
+                    "invoice" -> "order_id"
+                    "payment", "return", "commission" -> "invoice_id"
+                    else -> null
+                }
+                val parentId = parentField?.let { field ->
+                    if (data.has(field) && !data.isNull(field)) data.getString(field) else null
+                }
                 dao.upsert(BusinessDocumentEntity(
                     documentKey = "${change.entityType}:${change.entityId}",
                     entityType = change.entityType,
                     entityId = change.entityId,
+                    parentId = parentId,
+                    displayLabel = if (change.entityType == "invoice") {
+                        data.optString("customer_name").ifBlank { null }
+                    } else null,
                     version = change.version,
                     status = status,
                     amountMinor = amount,
@@ -45,6 +58,9 @@ class BusinessFeedRepository(
                 ))
                 if (change.entityType == "order" && status != null) {
                     database.orderDraftDao().updateStatus(change.entityId, status)
+                }
+                if (change.entityType == "payment" && status != null) {
+                    database.paymentDraftDao().updateStatus(change.entityId, status)
                 }
             }
         }
