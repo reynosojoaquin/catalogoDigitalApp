@@ -9,6 +9,16 @@ from catalog.services import (
     normalize_email, normalize_phone,
 )
 from sales.services import IdempotencyConflictError, InvalidOrderReferenceError, create_order
+from sales.models import Order
+from sales.serializers import OrderSerializer
+from fulfillment.models import Invoice
+from fulfillment.serializers import InvoiceSerializer
+from payments.models import CommissionMovement, PaymentReport
+from payments.serializers import CommissionMovementSerializer, PaymentReportSerializer
+from returns.models import ReturnReport
+from returns.serializers import ReturnReportSerializer
+from settlements.models import CommissionSettlement
+from settlements.serializers import SettlementSerializer
 
 from .models import SyncOperationReceipt
 
@@ -186,4 +196,30 @@ def serialize_change(change):
         "sequence": change.sequence, "entity_type": change.entity_type,
         "entity_id": str(change.entity_id), "version": change.version,
         "occurred_at": change.occurred_at.isoformat(), "data": data,
+    }
+
+
+BUSINESS_SERIALIZERS = {
+    "order": (Order, OrderSerializer, ("items",)),
+    "invoice": (Invoice, InvoiceSerializer, ("items",)),
+    "payment": (PaymentReport, PaymentReportSerializer, ()),
+    "return": (ReturnReport, ReturnReportSerializer, ("items",)),
+    "commission": (CommissionMovement, CommissionMovementSerializer, ()),
+    "settlement": (CommissionSettlement, SettlementSerializer, ("items",)),
+}
+
+
+def serialize_business_change(change):
+    model, serializer_class, prefetches = BUSINESS_SERIALIZERS[change.entity_type]
+    queryset = model.objects.filter(pk=change.entity_id)
+    if prefetches:
+        queryset = queryset.prefetch_related(*prefetches)
+    entity = queryset.first()
+    return {
+        "sequence": change.sequence,
+        "entity_type": change.entity_type,
+        "entity_id": str(change.entity_id),
+        "version": change.version,
+        "occurred_at": change.occurred_at.isoformat(),
+        "data": None if entity is None else serializer_class(entity).data,
     }

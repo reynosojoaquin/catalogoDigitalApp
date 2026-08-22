@@ -273,3 +273,5 @@ class OfflineSyncApiTests(APITestCase):
         order_changes = [item for item in response.data["changes"] if item["entity_type"] == "order"]
         self.assertEqual(len(order_changes), 1)
         self.assertEqual(order_changes[0]["entity_id"], str(own_order.id))
+        self.assertEqual(order_changes[0]["data"]["id"], str(own_order.id))
+        self.assertEqual(order_changes[0]["data"]["total"], "10.00")

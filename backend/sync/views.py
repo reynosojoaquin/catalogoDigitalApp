@@ -15,7 +15,7 @@ from .serializers import (
     SyncOrderDataSerializer, SyncReceiptSerializer,
 )
 from .services import (
-    SyncIdempotencyConflictError, record_rejected_operation, serialize_change,
+    SyncIdempotencyConflictError, record_rejected_operation, serialize_business_change, serialize_change,
     sync_customer_create, sync_order_create,
 )
 
@@ -97,11 +97,7 @@ class BusinessChangeFeedView(APIView):
         )[:limit])
         next_cursor = changes[-1].sequence if changes else after
         return Response({
-            "changes": [{
-                "sequence": change.sequence, "entity_type": change.entity_type,
-                "entity_id": str(change.entity_id), "version": change.version,
-                "occurred_at": change.occurred_at.isoformat(),
-            } for change in changes],
+            "changes": [serialize_business_change(change) for change in changes],
             "next_cursor": next_cursor,
             "has_more": SyncChange.objects.filter(
                 sequence__gt=next_cursor, seller=request.user
