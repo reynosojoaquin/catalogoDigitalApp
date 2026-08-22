@@ -13,6 +13,7 @@ from catalog.models import Customer, Product
 class Order(models.Model):
     class Status(models.TextChoices):
         SUBMITTED = "submitted", _("Submitted")
+        DELIVERED = "delivered", _("Delivered")
         CANCELLED = "cancelled", _("Cancelled")
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

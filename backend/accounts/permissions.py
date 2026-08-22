@@ -15,3 +15,18 @@ class IsSeller(BasePermission):
             user=request.user,
             role=UserProfile.Role.SELLER,
         ).exists()
+
+
+class IsAdministrator(BasePermission):
+    message = _("An administrator account is required.")
+
+    def has_permission(self, request, view):
+        if not request.user or not request.user.is_active:
+            return False
+        if request.user.is_superuser:
+            return True
+
+        return UserProfile.objects.filter(
+            user=request.user,
+            role=UserProfile.Role.ADMIN,
+        ).exists()
