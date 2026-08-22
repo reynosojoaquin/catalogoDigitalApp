@@ -151,7 +151,10 @@ class OfflineSyncApiTests(APITestCase):
         product.price = Decimal("125.00")
         product.save()
 
-        response = self.client.get(self.changes_url, {"after": first_sequence})
+        response = self.client.get(
+            self.changes_url,
+            {"after": first_sequence, "device_id": str(self.device.id)},
+        )
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data["changes"]), 1)
@@ -168,7 +171,7 @@ class OfflineSyncApiTests(APITestCase):
         product.price = Decimal("125.00")
         product.save()
 
-        response = self.client.get(self.changes_url)
+        response = self.client.get(self.changes_url, {"device_id": str(self.device.id)})
 
         changes = [item for item in response.data["changes"] if item["entity_id"] == str(product.id)]
         self.assertEqual(len(changes), 2)
@@ -362,7 +365,7 @@ class OfflineSyncApiTests(APITestCase):
             idempotency_key=uuid.uuid4(), request_hash="b" * 64, client_created_at=timezone.now(),
         )
 
-        response = self.client.get(self.business_changes_url)
+        response = self.client.get(self.business_changes_url, {"device_id": str(self.device.id)})
 
         self.assertEqual(response.status_code, 200)
         order_changes = [item for item in response.data["changes"] if item["entity_type"] == "order"]
@@ -383,9 +386,20 @@ class OfflineSyncApiTests(APITestCase):
         order.version += 1
         order.save(update_fields=["status", "version", "updated_at"])
 
-        response = self.client.get(self.business_changes_url)
+        response = self.client.get(self.business_changes_url, {"device_id": str(self.device.id)})
 
         changes = [item for item in response.data["changes"] if item["entity_id"] == str(order.id)]
         self.assertEqual(len(changes), 2)
         self.assertTrue(all(item["version"] == 2 for item in changes))
         self.assertTrue(all(item["data"]["version"] == 2 for item in changes))
+
+    def test_revoked_device_cannot_download_catalog_or_business_feeds(self):
+        self.device.is_active = False
+        self.device.save(update_fields=["is_active"])
+        parameters = {"device_id": str(self.device.id)}
+
+        catalog_response = self.client.get(self.changes_url, parameters)
+        business_response = self.client.get(self.business_changes_url, parameters)
+
+        self.assertEqual(catalog_response.status_code, 403)
+        self.assertEqual(business_response.status_code, 403)

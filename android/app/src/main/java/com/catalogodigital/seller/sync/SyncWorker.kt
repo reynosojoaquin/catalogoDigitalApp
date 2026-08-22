@@ -40,7 +40,7 @@ class SyncWorker(context: Context, parameters: WorkerParameters) : CoroutineWork
             var catalogHasMore = true
             var pageCount = 0
             while (catalogHasMore && pageCount < MAX_FEED_PAGES) {
-                val page = feedClient.changes(repository.cursor())
+                val page = feedClient.changes(repository.cursor(), deviceId)
                 repository.apply(page)
                 catalogHasMore = page.hasMore
                 pageCount += 1
@@ -51,7 +51,7 @@ class SyncWorker(context: Context, parameters: WorkerParameters) : CoroutineWork
             var businessHasMore = true
             var businessPageCount = 0
             while (businessHasMore && businessPageCount < MAX_FEED_PAGES) {
-                val page = businessClient.changes(businessRepository.cursor())
+                val page = businessClient.changes(businessRepository.cursor(), deviceId)
                 businessRepository.apply(page)
                 businessHasMore = page.hasMore
                 businessPageCount += 1

@@ -83,6 +83,13 @@ DATABASES = {"default": {
     "OPTIONS": {"sslmode": os.getenv("POSTGRES_SSLMODE", "prefer")},
 }}
 
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": os.environ["REDIS_URL"],
+    }
+}
+
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator", "OPTIONS": {"min_length": 12}},
@@ -136,4 +143,8 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
+    "DEFAULT_THROTTLE_RATES": {
+        "login": os.getenv("AUTH_LOGIN_RATE", "10/min"),
+    },
+    "NUM_PROXIES": int(os.getenv("TRUSTED_PROXY_COUNT", "0")),
 }

@@ -6,10 +6,11 @@ import java.net.HttpURLConnection
 import java.net.URI
 
 class BusinessFeedApiClient(private val baseUrl: String, private val token: String) {
-    fun changes(after: Long): BusinessFeedPage {
+    fun changes(after: Long, deviceId: String): BusinessFeedPage {
         SecureEndpointPolicy.requireValid(baseUrl)
         val endpoint = URI(
-            baseUrl.trimEnd('/') + "/api/sync/business-changes/?after=$after&limit=$PAGE_SIZE",
+            baseUrl.trimEnd('/') +
+                "/api/sync/business-changes/?after=$after&limit=$PAGE_SIZE&device_id=$deviceId",
         ).toURL()
         val connection = endpoint.openConnection() as HttpURLConnection
         return try {

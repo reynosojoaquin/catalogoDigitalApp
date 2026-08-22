@@ -1,7 +1,7 @@
 from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 from rest_framework import generics, status
-from rest_framework.exceptions import APIException, ValidationError
+from rest_framework.exceptions import APIException, PermissionDenied, ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from payments.serializers import PaymentReportCreateSerializer
@@ -25,6 +25,19 @@ from .services import (
 class SyncConflictApiError(APIException):
     status_code = status.HTTP_409_CONFLICT
     default_detail = _("The idempotency key was used for a different synchronization operation.")
+
+
+def require_active_feed_device(request):
+    device_id = request.query_params.get("device_id")
+    if not device_id:
+        raise ValidationError({"device_id": _("A device identifier is required.")})
+    try:
+        device = Device.objects.filter(pk=device_id, user=request.user, is_active=True).first()
+    except (ValueError, TypeError) as error:
+        raise ValidationError({"device_id": _("A valid device identifier is required.")}) from error
+    if not device:
+        raise PermissionDenied(_("An active device owned by the seller is required."))
+    return device
 
 
 class SyncCustomerOperationView(generics.ListCreateAPIView):
@@ -67,6 +80,7 @@ class CatalogChangeFeedView(APIView):
     permission_classes = [IsSeller]
 
     def get(self, request):
+        require_active_feed_device(request)
         try:
             after = max(int(request.query_params.get("after", 0)), 0)
             limit = min(max(int(request.query_params.get("limit", 100)), 1), 200)
@@ -89,6 +103,7 @@ class BusinessChangeFeedView(APIView):
     permission_classes = [IsSeller]
 
     def get(self, request):
+        require_active_feed_device(request)
         try:
             after = max(int(request.query_params.get("after", 0)), 0)
             limit = min(max(int(request.query_params.get("limit", 100)), 1), 200)

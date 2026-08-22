@@ -69,4 +69,10 @@ El panel `/admin/` permite consultar documentos históricos sin editarlos. Los f
 
 Estas acciones solo están disponibles para superusuarios o personal con rol administrador y el permiso Django correspondiente. Todas reutilizan los servicios de dominio, generan claves de idempotencia y producen eventos de auditoría.
 
+## Protección de autenticación
+
+Los intentos de inicio de sesión se limitan mediante Redis y se auditan sin almacenar credenciales. `AUTH_LOGIN_RATE` define la tasa por IP y `TRUSTED_PROXY_COUNT` indica cuántos proxies controlados existen delante de Django. En la composición de producción el único proxy confiable es Caddy.
+
+Los feeds de catálogo y operaciones exigen el UUID de un dispositivo activo perteneciente al vendedor. Al revocar un dispositivo desde la administración, este deja de descargar información y la aplicación elimina la sesión local al recibir la denegación.
+
 Consulta [AGENTS.md](AGENTS.md) para las reglas funcionales y técnicas del proyecto.

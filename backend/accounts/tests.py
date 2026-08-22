@@ -1,6 +1,8 @@
 import uuid
+from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
 
@@ -129,3 +131,22 @@ class AuthenticationAuditTests(APITestCase):
         )
         self.assertEqual(event.metadata, {})
         self.assertIsNone(event.actor)
+
+    def test_repeated_login_attempts_are_throttled_and_audited_without_credentials(self):
+        from rest_framework.throttling import ScopedRateThrottle
+
+        cache.clear()
+        payload = {"username": "unknown", "password": "never-recorded"}
+
+        with patch.object(ScopedRateThrottle, "THROTTLE_RATES", {"login": "2/min"}):
+            first = self.client.post(self.url, payload, format="json", REMOTE_ADDR="198.51.100.20")
+            second = self.client.post(self.url, payload, format="json", REMOTE_ADDR="198.51.100.20")
+            third = self.client.post(self.url, payload, format="json", REMOTE_ADDR="198.51.100.20")
+
+        self.assertEqual(first.status_code, 400)
+        self.assertEqual(second.status_code, 400)
+        self.assertEqual(third.status_code, 429)
+        event = AuditEvent.objects.get(action="authentication.throttled")
+        self.assertEqual(event.metadata, {})
+        self.assertEqual(event.ip_address, "198.51.100.20")
+        cache.clear()

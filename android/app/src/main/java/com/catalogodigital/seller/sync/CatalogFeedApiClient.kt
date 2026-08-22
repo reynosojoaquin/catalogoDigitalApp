@@ -6,8 +6,11 @@ import java.net.HttpURLConnection
 import java.net.URI
 
 class CatalogFeedApiClient(private val baseUrl: String, private val token: String) {
-    fun changes(after: Long): CatalogFeedPage {
-        val response = request("/api/sync/catalog-changes/?after=$after&limit=$PAGE_SIZE", "GET")
+    fun changes(after: Long, deviceId: String): CatalogFeedPage {
+        val response = request(
+            "/api/sync/catalog-changes/?after=$after&limit=$PAGE_SIZE&device_id=$deviceId",
+            "GET",
+        )
         val items = response.getJSONArray("changes")
         return CatalogFeedPage(
             changes = List(items.length()) { index -> parseChange(items.getJSONObject(index)) },
