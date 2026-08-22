@@ -2,6 +2,7 @@ import uuid
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
+from django.db import IntegrityError, transaction
 from django.test import TestCase
 from django.utils import timezone
 from rest_framework.authtoken.models import Token
@@ -149,3 +150,9 @@ class ReturnWorkflowTests(TestCase):
 
         self.assertEqual(response.status_code, 403)
         self.assertFalse(ReturnConfirmation.objects.exists())
+
+    def test_database_rejects_zero_return_quantity(self):
+        report = self.report().instance
+
+        with self.assertRaises(IntegrityError), transaction.atomic():
+            report.items.update(quantity=0)

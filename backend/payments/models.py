@@ -39,6 +39,19 @@ class PaymentReport(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+        constraints = [
+            models.CheckConstraint(condition=Q(amount__gte=0), name="payment_amount_nonnegative"),
+            models.CheckConstraint(
+                condition=(
+                    Q(method="cash", external_terminal_reference__isnull=True)
+                    | (
+                        Q(method="external_card_terminal", external_terminal_reference__isnull=False)
+                        & ~Q(external_terminal_reference="")
+                    )
+                ),
+                name="payment_terminal_reference_matches_method",
+            ),
+        ]
 
     def __str__(self):
         return str(self.id)
@@ -107,6 +120,7 @@ class CommissionMovement(models.Model):
                 condition=Q(movement_type="credit"),
                 name="unique_commission_credit_per_invoice_item",
             ),
+            models.CheckConstraint(condition=Q(amount__gte=0), name="commission_amount_nonnegative"),
         ]
 
     def __str__(self):

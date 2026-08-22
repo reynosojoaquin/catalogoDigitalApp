@@ -2,6 +2,7 @@ import uuid
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
+from django.db import IntegrityError, transaction
 from django.utils import timezone
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
@@ -251,3 +252,17 @@ class PaymentApiTests(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]["amount"], "20.50")
+
+    def test_database_requires_terminal_reference_to_match_method(self):
+        with self.assertRaises(IntegrityError), transaction.atomic():
+            PaymentReport.objects.create(
+                invoice=self.invoice,
+                seller=self.seller,
+                device=self.device,
+                method=PaymentReport.Method.CASH,
+                external_terminal_reference="NOT-ALLOWED-FOR-CASH",
+                amount=self.invoice.total,
+                idempotency_key=uuid.uuid4(),
+                request_hash="e" * 64,
+                client_reported_at=timezone.now(),
+            )

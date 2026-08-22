@@ -2,6 +2,7 @@ import uuid
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
+from django.db import IntegrityError, transaction
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
 
@@ -170,3 +171,12 @@ class ProductApiTests(SellerApiTestCase):
         )
 
         self.assertEqual(response.status_code, 405)
+
+    def test_database_rejects_negative_product_money(self):
+        with self.assertRaises(IntegrityError), transaction.atomic():
+            Product.objects.create(
+                sku="INVALID-MONEY",
+                name="Invalid",
+                price=Decimal("-0.01"),
+                commission_amount=Decimal("0.00"),
+            )

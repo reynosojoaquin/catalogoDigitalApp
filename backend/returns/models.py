@@ -2,6 +2,7 @@ import uuid
 
 from django.conf import settings
 from django.db import models
+from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
 from accounts.models import Device
@@ -29,6 +30,12 @@ class ReturnReport(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+        constraints = [
+            models.CheckConstraint(condition=Q(total__gte=0), name="return_total_nonnegative"),
+            models.CheckConstraint(
+                condition=Q(commission_total__gte=0), name="return_commission_nonnegative"
+            ),
+        ]
 
 
 class ReturnItem(models.Model):
@@ -42,9 +49,20 @@ class ReturnItem(models.Model):
     commission_total = models.DecimalField(max_digits=14, decimal_places=2)
 
     class Meta:
-        constraints = [models.UniqueConstraint(
-            fields=["return_report", "invoice_item"], name="unique_invoice_item_per_return"
-        )]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["return_report", "invoice_item"], name="unique_invoice_item_per_return"
+            ),
+            models.CheckConstraint(condition=Q(quantity__gt=0), name="return_item_quantity_positive"),
+            models.CheckConstraint(condition=Q(unit_price__gte=0), name="return_item_price_nonnegative"),
+            models.CheckConstraint(
+                condition=Q(unit_commission__gte=0), name="return_item_commission_nonnegative"
+            ),
+            models.CheckConstraint(condition=Q(line_total__gte=0), name="return_item_total_nonnegative"),
+            models.CheckConstraint(
+                condition=Q(commission_total__gte=0), name="return_item_commission_total_nonnegative"
+            ),
+        ]
 
 
 class ReturnConfirmation(models.Model):

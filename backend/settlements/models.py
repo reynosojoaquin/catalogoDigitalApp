@@ -2,6 +2,7 @@ import uuid
 
 from django.conf import settings
 from django.db import models
+from django.db.models import F, Q
 
 from payments.models import CommissionMovement
 
@@ -27,6 +28,9 @@ class CommissionSettlement(models.Model):
 
     class Meta:
         ordering = ["-confirmed_at"]
+        constraints = [
+            models.CheckConstraint(condition=Q(total__gt=0), name="settlement_total_positive"),
+        ]
 
     def __str__(self):
         return str(self.id)
@@ -44,9 +48,19 @@ class CommissionSettlementItem(models.Model):
         on_delete=models.PROTECT,
         related_name="settlement_item",
     )
-    movement_type = models.CharField(max_length=10)
+    movement_type = models.CharField(max_length=10, choices=CommissionMovement.MovementType.choices)
     amount = models.DecimalField(max_digits=14, decimal_places=2)
     signed_amount = models.DecimalField(max_digits=14, decimal_places=2)
 
     class Meta:
         ordering = ["id"]
+        constraints = [
+            models.CheckConstraint(condition=Q(amount__gte=0), name="settlement_item_amount_nonnegative"),
+            models.CheckConstraint(
+                condition=(
+                    Q(movement_type="credit", signed_amount=F("amount"))
+                    | Q(movement_type="debit", signed_amount=-F("amount"))
+                ),
+                name="settlement_item_signed_amount_consistent",
+            ),
+        ]

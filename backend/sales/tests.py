@@ -2,6 +2,7 @@ import uuid
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
+from django.db import IntegrityError, transaction
 from django.utils import timezone
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
@@ -164,3 +165,9 @@ class OrderApiTests(APITestCase):
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(Order.objects.count(), 0)
+
+    def test_database_rejects_negative_order_total(self):
+        response = self.post_order(self.payload())
+
+        with self.assertRaises(IntegrityError), transaction.atomic():
+            Order.objects.filter(pk=response.data["id"]).update(total=Decimal("-0.01"))

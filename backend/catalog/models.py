@@ -4,6 +4,7 @@ from decimal import Decimal
 from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.db.models import Q
 
 
 class Customer(models.Model):
@@ -58,6 +59,13 @@ class Product(models.Model):
 
     class Meta:
         ordering = ["name", "sku"]
+        constraints = [
+            models.CheckConstraint(condition=Q(price__gte=0), name="product_price_nonnegative"),
+            models.CheckConstraint(
+                condition=Q(commission_amount__gte=0),
+                name="product_commission_nonnegative",
+            ),
+        ]
 
     def save(self, *args, **kwargs):
         self.sku = self.sku.strip().upper()

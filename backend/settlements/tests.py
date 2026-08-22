@@ -3,6 +3,7 @@ from datetime import timedelta
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
+from django.db import IntegrityError, transaction
 from django.test import TestCase
 from django.utils import timezone
 from rest_framework.authtoken.models import Token
@@ -163,3 +164,10 @@ class CommissionSettlementTests(TestCase):
 
         self.assertEqual(response.status_code, 403)
         self.assertFalse(CommissionSettlement.objects.exists())
+
+    def test_database_rejects_inconsistent_signed_amount(self):
+        settlement = self.settle().settlement
+        item = settlement.items.first()
+
+        with self.assertRaises(IntegrityError), transaction.atomic():
+            settlement.items.filter(pk=item.pk).update(signed_amount=Decimal("999.00"))
