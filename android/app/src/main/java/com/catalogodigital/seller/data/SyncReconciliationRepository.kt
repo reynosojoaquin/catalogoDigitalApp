@@ -24,6 +24,7 @@ class SyncReconciliationRepository(private val database: CatalogDatabase) {
                         "customer_create" -> database.customerDraftDao().updateStatus(entityId, result.status)
                         "order_create" -> database.orderDraftDao().updateStatus(entityId, result.status)
                         "payment_create" -> database.paymentDraftDao().updateStatus(entityId, result.status)
+                        "return_create" -> database.returnDraftDao().updateStatus(entityId, result.status)
                     }
                 }
             }

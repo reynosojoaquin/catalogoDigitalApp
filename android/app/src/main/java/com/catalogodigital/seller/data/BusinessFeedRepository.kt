@@ -62,6 +62,9 @@ class BusinessFeedRepository(
                 if (change.entityType == "payment" && status != null) {
                     database.paymentDraftDao().updateStatus(change.entityId, status)
                 }
+                if (change.entityType == "return" && status != null) {
+                    database.returnDraftDao().updateStatus(change.entityId, status)
+                }
             }
         }
         database.syncCursorDao().upsert(SyncCursor(FEED, page.nextCursor))

@@ -33,5 +33,8 @@
         <activity
             android:name=".PaymentCreateActivity"
             android:exported="false" />
+        <activity
+            android:name=".ReturnCreateActivity"
+            android:exported="false" />
     </application>
 </manifest>

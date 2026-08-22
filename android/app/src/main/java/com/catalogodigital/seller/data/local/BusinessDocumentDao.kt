@@ -16,4 +16,10 @@ interface BusinessDocumentDao {
 
     @Query("SELECT * FROM business_documents ORDER BY occurredAt DESC, documentKey")
     fun observeAll(): Flow<List<BusinessDocumentEntity>>
+
+    @Query("SELECT * FROM business_documents WHERE entityType = :entityType AND status = :status ORDER BY occurredAt, entityId")
+    suspend fun byTypeAndStatus(entityType: String, status: String): List<BusinessDocumentEntity>
+
+    @Query("SELECT * FROM business_documents WHERE entityType = :entityType ORDER BY occurredAt, entityId")
+    suspend fun byType(entityType: String): List<BusinessDocumentEntity>
 }

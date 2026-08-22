@@ -68,4 +68,19 @@
     <string name="payment_invalid">Verifica el método y la referencia de la terminal.</string>
     <string name="payment_save_failed">No fue posible guardar el reporte de pago.</string>
     <string name="payment_invoice_format">%1$s — %2$s</string>
+    <string name="return_create_title">Reportar devolución</string>
+    <string name="return_invoice">Factura pagada</string>
+    <string name="return_item">Producto facturado</string>
+    <string name="return_quantity">Cantidad</string>
+    <string name="return_add_item">Agregar producto</string>
+    <string name="return_clear_items">Limpiar productos</string>
+    <string name="return_save">Guardar devolución sin conexión</string>
+    <string name="return_saved">Devolución guardada y pendiente de sincronización.</string>
+    <string name="return_no_invoices">No hay productos facturados disponibles para devolución.</string>
+    <string name="return_invalid">Verifica los productos y cantidades de la devolución.</string>
+    <string name="return_duplicate">El producto ya está incluido en la devolución.</string>
+    <string name="return_save_failed">No fue posible guardar la devolución.</string>
+    <string name="return_item_format">%1$s — disponibles: %2$d</string>
+    <string name="return_line_format">%1$s × %2$d — %3$s</string>
+    <string name="return_total_format">Total de devolución: %1$s</string>
 </resources>

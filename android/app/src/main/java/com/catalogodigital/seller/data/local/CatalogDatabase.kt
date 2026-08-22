@@ -12,8 +12,9 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         PendingOperation::class, SyncCursor::class, CustomerEntity::class,
         ProductEntity::class, CustomerDraftEntity::class, OrderDraftEntity::class,
         OrderDraftItemEntity::class, BusinessDocumentEntity::class, PaymentDraftEntity::class,
+        ReturnDraftEntity::class, ReturnDraftItemEntity::class,
     ],
-    version = 7,
+    version = 8,
     exportSchema = true,
 )
 abstract class CatalogDatabase : RoomDatabase() {
@@ -24,6 +25,7 @@ abstract class CatalogDatabase : RoomDatabase() {
     abstract fun orderDraftDao(): OrderDraftDao
     abstract fun businessDocumentDao(): BusinessDocumentDao
     abstract fun paymentDraftDao(): PaymentDraftDao
+    abstract fun returnDraftDao(): ReturnDraftDao
 
     companion object {
         fun create(context: Context): CatalogDatabase = Room.databaseBuilder(
@@ -33,6 +35,7 @@ abstract class CatalogDatabase : RoomDatabase() {
         ).addMigrations(
             MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
             MIGRATION_6_7,
+            MIGRATION_7_8,
         ).build()
 
         private val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -91,6 +94,17 @@ abstract class CatalogDatabase : RoomDatabase() {
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_payment_drafts_invoiceId` ON `payment_drafts` (`invoiceId`)")
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_payment_drafts_status` ON `payment_drafts` (`status`)")
                 db.execSQL("UPDATE `sync_cursors` SET `sequence` = 0 WHERE `feed` = 'business'")
+            }
+        }
+
+        private val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS `return_drafts` (`id` TEXT NOT NULL, `invoiceId` TEXT NOT NULL, `status` TEXT NOT NULL, `totalMinor` INTEGER NOT NULL, `commissionTotalMinor` INTEGER NOT NULL, `clientReportedAt` TEXT NOT NULL, PRIMARY KEY(`id`))")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_return_drafts_invoiceId` ON `return_drafts` (`invoiceId`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_return_drafts_status` ON `return_drafts` (`status`)")
+                db.execSQL("CREATE TABLE IF NOT EXISTS `return_draft_items` (`returnId` TEXT NOT NULL, `invoiceItemId` TEXT NOT NULL, `productName` TEXT NOT NULL, `quantity` INTEGER NOT NULL, `unitPriceMinor` INTEGER NOT NULL, `unitCommissionMinor` INTEGER NOT NULL, `lineTotalMinor` INTEGER NOT NULL, `commissionTotalMinor` INTEGER NOT NULL, PRIMARY KEY(`returnId`, `invoiceItemId`), FOREIGN KEY(`returnId`) REFERENCES `return_drafts`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT )")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_return_draft_items_returnId` ON `return_draft_items` (`returnId`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_return_draft_items_invoiceItemId` ON `return_draft_items` (`invoiceItemId`)")
             }
         }
     }

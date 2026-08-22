@@ -68,4 +68,19 @@
     <string name="payment_invalid">Check the method and terminal reference.</string>
     <string name="payment_save_failed">Unable to save the payment report.</string>
     <string name="payment_invoice_format">%1$s — %2$s</string>
+    <string name="return_create_title">Report return</string>
+    <string name="return_invoice">Paid invoice</string>
+    <string name="return_item">Invoiced product</string>
+    <string name="return_quantity">Quantity</string>
+    <string name="return_add_item">Add product</string>
+    <string name="return_clear_items">Clear products</string>
+    <string name="return_save">Save return offline</string>
+    <string name="return_saved">Return saved and pending synchronization.</string>
+    <string name="return_no_invoices">No invoiced products are available for return.</string>
+    <string name="return_invalid">Check the return products and quantities.</string>
+    <string name="return_duplicate">The product is already included in the return.</string>
+    <string name="return_save_failed">Unable to save the return.</string>
+    <string name="return_item_format">%1$s — available: %2$d</string>
+    <string name="return_line_format">%1$s × %2$d — %3$s</string>
+    <string name="return_total_format">Return total: %1$s</string>
 </resources>

@@ -34,6 +34,9 @@ class MainActivity : ComponentActivity() {
         binding.createPayment.setOnClickListener {
             startActivity(Intent(this, PaymentCreateActivity::class.java))
         }
+        binding.createReturn.setOnClickListener {
+            startActivity(Intent(this, ReturnCreateActivity::class.java))
+        }
 
         binding.syncNow.setOnClickListener {
             if (BuildConfig.API_BASE_URL.isBlank()) {
