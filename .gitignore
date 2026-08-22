@@ -17,3 +17,5 @@ android/**/build/
 android/.idea/
 android/*.jks
 android/*.keystore
+.android-sdk/
+.tool-downloads/

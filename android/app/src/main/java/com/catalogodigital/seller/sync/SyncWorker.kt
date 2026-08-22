@@ -16,7 +16,7 @@ class SyncWorker(context: Context, parameters: WorkerParameters) : CoroutineWork
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         val dao = (applicationContext as CatalogApplication).database.pendingOperationDao()
         dao.recoverInterrupted(OperationStatus.IN_FLIGHT, OperationStatus.PENDING)
-        val operations = dao.claim(BATCH_SIZE, System.currentTimeMillis())
+        val operations = dao.claim(SyncBatchPolicy.MAX_OPERATIONS, System.currentTimeMillis())
         if (operations.isEmpty()) return@withContext Result.success()
 
         val token = SessionStore(applicationContext).token()
@@ -29,15 +29,11 @@ class SyncWorker(context: Context, parameters: WorkerParameters) : CoroutineWork
             val queue = OperationQueue(dao)
             val results = SyncApiClient(BuildConfig.API_BASE_URL, token).push(operations, queue)
             results.forEach { dao.updateResult(it.operationId, it.status, it.conflictCode) }
-            if (operations.size == BATCH_SIZE) Result.retry() else Result.success()
+            if (operations.size == SyncBatchPolicy.MAX_OPERATIONS) Result.retry() else Result.success()
         } catch (error: Exception) {
             if (error is CancellationException) throw error
             operations.forEach { dao.updateResult(it.operationId, OperationStatus.PENDING, null) }
             Result.retry()
         }
-    }
-
-    private companion object {
-        const val BATCH_SIZE = 50
     }
 }

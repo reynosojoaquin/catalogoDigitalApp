@@ -2,6 +2,7 @@ package com.catalogodigital.seller.sync
 
 import com.catalogodigital.seller.data.OperationQueue
 import com.catalogodigital.seller.data.local.PendingOperation
+import com.catalogodigital.seller.network.SecureEndpointPolicy
 import org.json.JSONArray
 import org.json.JSONObject
 import java.net.HttpURLConnection
@@ -11,9 +12,8 @@ data class OperationResult(val operationId: String, val status: String, val conf
 
 class SyncApiClient(private val baseUrl: String, private val token: String) {
     fun push(operations: List<PendingOperation>, queue: OperationQueue): List<OperationResult> {
-        require(baseUrl.startsWith("https://")) {
-            "The API URL must use HTTPS."
-        }
+        SecureEndpointPolicy.requireValid(baseUrl)
+        SyncBatchPolicy.requireValid(operations)
         val body = JSONObject().apply {
             put("device_id", operations.first().deviceId)
             put("operations", JSONArray().apply {

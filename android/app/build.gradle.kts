@@ -4,6 +4,11 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
+    id("androidx.room")
+}
+
+room {
+    schemaDirectory("$projectDir/schemas")
 }
 
 val localProperties = Properties().apply {

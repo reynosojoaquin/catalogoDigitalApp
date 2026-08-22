@@ -1,6 +1,7 @@
 package com.catalogodigital.seller.auth
 
 import org.json.JSONObject
+import com.catalogodigital.seller.network.SecureEndpointPolicy
 import java.net.HttpURLConnection
 import java.net.URI
 
@@ -21,7 +22,7 @@ class AuthApiClient(private val baseUrl: String) {
     }
 
     private fun request(path: String, body: JSONObject, token: String?): JSONObject {
-        require(baseUrl.startsWith("https://")) { "The API URL must use HTTPS." }
+        SecureEndpointPolicy.requireValid(baseUrl)
         val connection = URI(baseUrl.trimEnd('/') + path).toURL().openConnection() as HttpURLConnection
         return try {
             connection.requestMethod = "POST"
