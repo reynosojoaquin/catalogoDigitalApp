@@ -1,5 +1,7 @@
 import uuid
 
+from .models import AuditEvent
+
 
 class AuditContextMiddleware:
     def __init__(self, get_response):
@@ -16,3 +18,35 @@ class AuditContextMiddleware:
         response["X-Correlation-ID"] = correlation_id
         return response
 
+
+class AdminMutationAuditMiddleware:
+    mutation_methods = {"POST", "PUT", "PATCH", "DELETE"}
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        if request.path.startswith("/admin/") and request.method in self.mutation_methods:
+            actor = request.user if request.user.is_authenticated else None
+            denied_login = request.path == "/admin/login/" and actor is None
+            result = (
+                AuditEvent.Result.DENIED
+                if denied_login or response.status_code >= 400
+                else AuditEvent.Result.SUCCESS
+            )
+            AuditEvent.objects.create(
+                actor=actor,
+                action="admin.mutation",
+                resource_type="admin",
+                result=result,
+                source="admin",
+                correlation_id=request.correlation_id,
+                ip_address=request.META.get("REMOTE_ADDR"),
+                metadata={
+                    "method": request.method,
+                    "path": request.path,
+                    "status_code": response.status_code,
+                },
+            )
+        return response

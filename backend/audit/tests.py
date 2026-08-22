@@ -1,5 +1,6 @@
 import uuid
 
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 
 from .models import AuditEvent
@@ -31,3 +32,38 @@ class AuditEventImmutabilityTests(TestCase):
         with self.assertRaisesMessage(ValueError, "append-only"):
             AuditEvent.objects.filter(pk=self.event.pk).delete()
 
+
+class AdminMutationAuditTests(TestCase):
+    def setUp(self):
+        self.admin = get_user_model().objects.create_superuser(
+            username="audit-admin",
+            email="admin@example.invalid",
+            password="StrongPassword123!",
+        )
+        self.client.force_login(self.admin)
+
+    def test_admin_change_is_audited_without_form_data(self):
+        response = self.client.post("/admin/auth/group/add/", {"name": "operators", "permissions": []})
+
+        self.assertEqual(response.status_code, 302)
+        event = AuditEvent.objects.get(action="admin.mutation")
+        self.assertEqual(event.actor, self.admin)
+        self.assertEqual(event.result, AuditEvent.Result.SUCCESS)
+        self.assertEqual(event.source, "admin")
+        self.assertEqual(event.metadata["method"], "POST")
+        self.assertNotIn("name", event.metadata)
+
+    def test_denied_admin_login_is_audited_without_credentials(self):
+        self.client.logout()
+
+        response = self.client.post(
+            "/admin/login/",
+            {"username": "unknown", "password": "not-recorded", "next": "/admin/"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        event = AuditEvent.objects.get(action="admin.mutation")
+        self.assertIsNone(event.actor)
+        self.assertEqual(event.result, AuditEvent.Result.DENIED)
+        self.assertEqual(event.metadata["path"], "/admin/login/")
+        self.assertNotIn("password", event.metadata)

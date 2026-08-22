@@ -1,8 +1,12 @@
 import os
 from pathlib import Path
+from django.core.exceptions import ImproperlyConfigured
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+APP_ENV = os.getenv("APP_ENV", "development").lower()
+if APP_ENV not in {"development", "test", "production"}:
+    raise ImproperlyConfigured("APP_ENV must be development, test, or production")
 
 
 def env_bool(name: str, default: bool = False) -> bool:
@@ -13,6 +17,10 @@ SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
 PII_HASH_KEY = os.environ["PII_HASH_KEY"]
 DEBUG = env_bool("DJANGO_DEBUG")
 ALLOWED_HOSTS = [value.strip() for value in os.getenv("DJANGO_ALLOWED_HOSTS", "").split(",") if value.strip()]
+if APP_ENV == "production" and DEBUG:
+    raise ImproperlyConfigured("DJANGO_DEBUG must be false in production")
+if APP_ENV == "production" and not ALLOWED_HOSTS:
+    raise ImproperlyConfigured("DJANGO_ALLOWED_HOSTS is required in production")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -37,6 +45,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
@@ -44,6 +53,7 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "audit.middleware.AuditContextMiddleware",
+    "audit.middleware.AdminMutationAuditMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -69,6 +79,8 @@ DATABASES = {"default": {
     "PASSWORD": os.environ["POSTGRES_PASSWORD"],
     "HOST": os.environ["POSTGRES_HOST"],
     "PORT": os.environ["POSTGRES_PORT"],
+    "CONN_MAX_AGE": int(os.getenv("POSTGRES_CONN_MAX_AGE", "0" if APP_ENV == "test" else "60")),
+    "OPTIONS": {"sslmode": os.getenv("POSTGRES_SSLMODE", "prefer")},
 }}
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -87,9 +99,22 @@ LOCALE_PATHS = [BASE_DIR / "locale"]
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {
+        "BACKEND": (
+            "whitenoise.storage.CompressedManifestStaticFilesStorage"
+            if APP_ENV == "production"
+            else "django.contrib.staticfiles.storage.StaticFilesStorage"
+        )
+    },
+}
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CORS_ALLOWED_ORIGINS = [value.strip() for value in os.getenv("DJANGO_CORS_ALLOWED_ORIGINS", "").split(",") if value.strip()]
+CSRF_TRUSTED_ORIGINS = [
+    value.strip() for value in os.getenv("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",") if value.strip()
+]
 CSRF_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_HTTPONLY = True
@@ -101,6 +126,8 @@ X_FRAME_OPTIONS = "DENY"
 SECURE_HSTS_SECONDS = 0 if DEBUG else 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG
 SECURE_HSTS_PRELOAD = not DEBUG
+SECURE_SSL_REDIRECT = env_bool("DJANGO_SECURE_SSL_REDIRECT", APP_ENV == "production")
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https") if APP_ENV == "production" else None
 
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],

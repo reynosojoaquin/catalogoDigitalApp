@@ -2,22 +2,49 @@
 
 Plataforma de intermediación comercial con administración web, API central y aplicación Android offline para vendedores.
 
-## Inicio rápido
+## Configuración segura
 
-1. Copiar `.env.example` como `.env` y reemplazar los secretos.
+La aplicación obtiene secretos y parámetros sensibles únicamente mediante variables de entorno. Los archivos `*.example` contienen marcadores de configuración y nunca datos reales. No se deben versionar `.env`, `.env.test` ni `.env.production`.
+
+## Desarrollo
+
+1. Copiar `.env.example` como `.env` y reemplazar todos los valores sensibles.
 2. Ejecutar `docker compose build`.
 3. Ejecutar `docker compose run --rm backend python manage.py migrate`.
 4. Ejecutar `docker compose up`.
 5. Consultar `http://localhost:8000/health/`.
 
-## Decisiones iniciales
+PostgreSQL y Redis permanecen en una red interna y no publican puertos al host.
+
+## Pruebas
+
+Crear `.env.test` a partir de `.env.test.example` y ejecutar:
+
+```powershell
+docker compose -f compose.test.yaml up --build --abort-on-container-exit --exit-code-from backend
+docker compose -f compose.test.yaml down --volumes
+```
+
+La base de datos de pruebas es efímera y no contiene información de ejemplo en el código de ejecución.
+
+## Producción
+
+1. Crear `.env.production` a partir de `.env.production.example` con secretos aleatorios y el dominio real.
+2. Definir `APP_VERSION` con una versión inmutable de la aplicación.
+3. Construir la imagen: `docker compose -f compose.production.yaml build backend`.
+4. Aplicar migraciones: `docker compose -f compose.production.yaml run --rm backend python manage.py migrate`.
+5. Iniciar servicios: `docker compose -f compose.production.yaml up -d`.
+
+Caddy termina TLS automáticamente. El backend no se expone directamente, sirve archivos estáticos con WhiteNoise y valida que depuración esté desactivada y que exista una lista explícita de hosts permitidos.
+
+## Arquitectura
 
 - Backend: Python, Django y Django REST Framework.
 - Persistencia: PostgreSQL.
 - Coordinación y caché: Redis.
-- Idioma inicial: `es-DO`; arquitectura preparada para inglés.
-- Zona horaria de presentación inicial: `America/Santo_Domingo`.
-- Los servicios de datos están aislados de la red pública.
-- La API deniega acceso por defecto; `/health/` es el único endpoint público inicial.
+- Aplicación de vendedores: Android con almacenamiento y cola de sincronización offline durables.
+- Idioma inicial: `es-DO`; interfaz preparada para internacionalización.
+- Zona horaria inicial de presentación: `America/Santo_Domingo`; las fechas se almacenan en UTC.
+- La API deniega acceso por defecto; `/health/` es el endpoint público de comprobación.
 
 Consulta [AGENTS.md](AGENTS.md) para las reglas funcionales y técnicas del proyecto.

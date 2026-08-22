@@ -1,4 +1,4 @@
-name: catalogo-digital
+name: catalogo-digital-test
 
 services:
   db:
@@ -7,8 +7,6 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
@@ -18,9 +16,6 @@ services:
 
   redis:
     image: redis:7.4.10-alpine3.21
-    command: ["redis-server", "--appendonly", "yes"]
-    volumes:
-      - redis_data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -29,33 +24,22 @@ services:
     networks: [data]
 
   backend:
-    image: catalogo-digital-backend:${APP_VERSION:-development}
+    image: catalogo-digital-backend:${APP_VERSION:-test}
     build:
       context: ./backend
       target: development
-    env_file: .env
-    command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
-    volumes:
-      - ./backend:/app
-    ports:
-      - "8000:8000"
+    env_file: ${ENV_FILE:-.env.test}
+    environment:
+      APP_ENV: test
+      DJANGO_DEBUG: "false"
+    command: ["python", "manage.py", "test"]
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/', timeout=2)"]
-      interval: 10s
-      timeout: 3s
-      retries: 10
-    networks: [app, data]
-
-volumes:
-  postgres_data:
-  redis_data:
+    networks: [data]
 
 networks:
-  app:
   data:
     internal: true
