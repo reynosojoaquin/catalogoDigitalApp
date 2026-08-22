@@ -2,6 +2,7 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from catalog.services import fingerprint_identity_document, normalize_email, normalize_phone
+from sales.serializers import OrderItemInputSerializer
 
 from .models import SyncDeviceCursor, SyncOperationReceipt
 
@@ -61,3 +62,39 @@ class SyncCursorSerializer(serializers.ModelSerializer):
         model = SyncDeviceCursor
         fields = ("device_id", "last_sequence", "acknowledged_at")
         read_only_fields = fields
+
+
+class SyncOrderDataSerializer(serializers.Serializer):
+    id = serializers.UUIDField()
+    customer_id = serializers.UUIDField()
+    client_created_at = serializers.DateTimeField()
+    items = OrderItemInputSerializer(many=True, allow_empty=False)
+
+    def validate_items(self, items):
+        product_ids = [item["product_id"] for item in items]
+        if len(product_ids) != len(set(product_ids)):
+            raise serializers.ValidationError(_("Each product can appear only once per order."))
+        return items
+
+
+class SyncBatchOperationSerializer(serializers.Serializer):
+    operation_id = serializers.UUIDField()
+    operation_type = serializers.ChoiceField(choices=("customer_create", "order_create"))
+    idempotency_key = serializers.UUIDField()
+    client_timestamp = serializers.DateTimeField()
+    client_version = serializers.IntegerField(min_value=1)
+    payload = serializers.JSONField()
+
+
+class SyncBatchSerializer(serializers.Serializer):
+    device_id = serializers.UUIDField()
+    operations = SyncBatchOperationSerializer(many=True, allow_empty=False, max_length=50)
+
+    def validate_operations(self, operations):
+        operation_ids = [item["operation_id"] for item in operations]
+        idempotency_keys = [item["idempotency_key"] for item in operations]
+        if len(operation_ids) != len(set(operation_ids)):
+            raise serializers.ValidationError(_("Operation IDs must be unique within a batch."))
+        if len(idempotency_keys) != len(set(idempotency_keys)):
+            raise serializers.ValidationError(_("Idempotency keys must be unique within a batch."))
+        return operations

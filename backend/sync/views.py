@@ -11,9 +11,13 @@ from accounts.permissions import IsSeller
 from .models import SyncChange, SyncDeviceCursor, SyncOperationReceipt
 from .serializers import (
     CursorAcknowledgementSerializer, SyncCursorSerializer,
-    SyncCustomerOperationSerializer, SyncReceiptSerializer,
+    SyncBatchSerializer, SyncCustomerDataSerializer, SyncCustomerOperationSerializer,
+    SyncOrderDataSerializer, SyncReceiptSerializer,
 )
-from .services import SyncIdempotencyConflictError, serialize_change, sync_customer_create
+from .services import (
+    SyncIdempotencyConflictError, record_rejected_operation, serialize_change,
+    sync_customer_create, sync_order_create,
+)
 
 
 class SyncConflictApiError(APIException):
@@ -96,3 +100,81 @@ class CursorAcknowledgementView(generics.GenericAPIView):
         cursor.last_sequence = sequence
         cursor.save(update_fields=["last_sequence", "acknowledged_at"])
         return Response(SyncCursorSerializer(cursor).data)
+
+
+class SyncBatchView(generics.GenericAPIView):
+    permission_classes = [IsSeller]
+    serializer_class = SyncBatchSerializer
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        device = Device.objects.filter(
+            pk=serializer.validated_data["device_id"], user=request.user, is_active=True
+        ).first()
+        if not device:
+            raise ValidationError({"device_id": _("An active device owned by the seller is required.")})
+
+        results = []
+        for operation in serializer.validated_data["operations"]:
+            results.append(self.process_operation(request, device, operation))
+        counts = {
+            receipt_status: sum(result["status"] == receipt_status for result in results)
+            for receipt_status in SyncOperationReceipt.Status.values
+        }
+        return Response({"results": results, "counts": counts})
+
+    def process_operation(self, request, device, operation):
+        payload_serializer_class = (
+            SyncCustomerDataSerializer
+            if operation["operation_type"] == "customer_create"
+            else SyncOrderDataSerializer
+        )
+        payload_serializer = payload_serializer_class(data=operation["payload"])
+        if operation["client_version"] != 1 or not payload_serializer.is_valid():
+            try:
+                receipt, _created = record_rejected_operation(
+                    actor=request.user, device=device, conflict_code="invalid_payload",
+                    **operation,
+                )
+                return SyncReceiptSerializer(receipt).data
+            except SyncIdempotencyConflictError:
+                return self.idempotency_conflict_result(operation)
+
+        values = payload_serializer.validated_data
+        try:
+            if operation["operation_type"] == "customer_create":
+                receipt, _created = sync_customer_create(
+                    actor=request.user, device=device,
+                    operation_id=operation["operation_id"],
+                    idempotency_key=operation["idempotency_key"],
+                    client_timestamp=operation["client_timestamp"],
+                    client_version=operation["client_version"],
+                    customer_id=values["id"], full_name=values["full_name"],
+                    email=values.get("email"), phone=values.get("phone"),
+                    identity_document=values.get("identity_document"),
+                    correlation_id=request.correlation_id,
+                )
+            else:
+                receipt, _created = sync_order_create(
+                    actor=request.user, device=device,
+                    operation_id=operation["operation_id"],
+                    idempotency_key=operation["idempotency_key"],
+                    client_timestamp=operation["client_timestamp"],
+                    client_version=operation["client_version"],
+                    order_id=values["id"], customer_id=values["customer_id"],
+                    client_created_at=values["client_created_at"], items=values["items"],
+                    correlation_id=request.correlation_id,
+                )
+            return SyncReceiptSerializer(receipt).data
+        except SyncIdempotencyConflictError:
+            return self.idempotency_conflict_result(operation)
+
+    @staticmethod
+    def idempotency_conflict_result(operation):
+        return {
+            "operation_id": str(operation["operation_id"]),
+            "entity_type": operation["operation_type"].removesuffix("_create"),
+            "status": SyncOperationReceipt.Status.CONFLICT,
+            "conflict_code": "idempotency_mismatch",
+        }

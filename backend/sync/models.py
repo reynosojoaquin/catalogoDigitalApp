@@ -24,6 +24,7 @@ class SyncOperationReceipt(models.Model):
     class Status(models.TextChoices):
         APPLIED = "applied", "Applied"
         CONFLICT = "conflict", "Conflict"
+        REJECTED = "rejected", "Rejected"
 
     operation_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     seller = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="sync_receipts")
