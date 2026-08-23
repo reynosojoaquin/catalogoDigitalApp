@@ -3,7 +3,7 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Sum
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.utils.translation import gettext as _
 
 from accounts.models import Device, UserProfile
@@ -126,7 +126,7 @@ def resource_list(request, resource):
         queryset = queryset.filter(status=status_filter)
     paginator = Paginator(queryset, 25)
     page = paginator.get_page(request.GET.get("page"))
-    rows = [[_value_for_column(item, field) for field, _ in config["columns"]] for item in page]
+    rows = [{"url": f"/app/{resource}/{item.pk}/", "values": [_value_for_column(item, field) for field, _ in config["columns"]]} for item in page]
     statuses = []
     if hasattr(config["model"], "Status"):
         statuses = [(choice.value, choice.label) for choice in config["model"].Status]
@@ -134,4 +134,22 @@ def resource_list(request, resource):
         "page_title": config["title"], "columns": [label for _, label in config["columns"]],
         "rows": rows, "page_obj": page, "query": query, "statuses": statuses,
         "status_filter": status_filter, "resource": resource,
+    })
+
+
+@login_required(login_url="/admin/login/")
+def resource_detail(request, resource, pk):
+    if not _is_administrator(request.user):
+        raise PermissionDenied
+    config = RESOURCE_CONFIG.get(resource)
+    if config is None:
+        raise PermissionDenied
+    queryset = config["model"].objects.all()
+    for relation in {"seller", "customer", "invoice", "actor"}:
+        if any(field.startswith(f"{relation}__") for field, _ in config["columns"]):
+            queryset = queryset.select_related(relation)
+    item = get_object_or_404(queryset, pk=pk)
+    fields = [{"label": label, "value": _value_for_column(item, field)} for field, label in config["columns"]]
+    return render(request, "dashboard/resource_detail.html", {
+        "page_title": config["title"], "resource": resource, "item": item, "fields": fields,
     })

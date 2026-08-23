@@ -69,3 +69,13 @@ class DashboardTests(TestCase):
         self.client.force_login(user)
 
         self.assertEqual(self.client.get("/app/orders/").status_code, 403)
+
+    def test_custom_resource_detail_renders_record(self):
+        user = get_user_model().objects.create_superuser(username="detail-admin", password="A-secure-password-123")
+        product = Product.objects.create(sku="SKU-DETAIL", name="Detailed product", price="12.50", commission_amount="1.25")
+        self.client.force_login(user)
+
+        response = self.client.get(f"/app/catalog/{product.id}/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Detailed product")
