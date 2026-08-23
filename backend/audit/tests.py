@@ -101,3 +101,22 @@ class AdminMutationAuditTests(TestCase):
         response = self.client.get("/admin/auth/user/")
 
         self.assertEqual(response.status_code, 403)
+
+    def test_skipped_admin_domain_action_is_audited_without_payload(self):
+        profile = UserProfile.objects.create(user=self.admin, role=UserProfile.Role.ADMIN)
+
+        response = self.client.post(
+            "/admin/accounts/userprofile/",
+            {
+                "action": "settle_available_commissions",
+                "_selected_action": str(profile.pk),
+                "index": "0",
+            },
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        event = AuditEvent.objects.get(action="admin.operation_denied")
+        self.assertEqual(event.resource_type, "user_profile")
+        self.assertEqual(event.resource_id, str(profile.pk))
+        self.assertEqual(event.metadata, {"reason": "profile_not_seller"})

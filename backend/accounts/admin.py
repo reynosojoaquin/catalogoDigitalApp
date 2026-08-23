@@ -22,6 +22,12 @@ class UserProfileAdmin(DomainActionAdminMixin, admin.ModelAdmin):
         timestamp = timezone.now()
         for profile in queryset.select_related("user").order_by("user_id"):
             if profile.role != UserProfile.Role.SELLER:
+                self.audit_denied(
+                    request,
+                    resource_type="user_profile",
+                    resource_id=profile.pk,
+                    reason="profile_not_seller",
+                )
                 skipped += 1
                 continue
             try:
@@ -36,6 +42,12 @@ class UserProfileAdmin(DomainActionAdminMixin, admin.ModelAdmin):
                 )
                 settled += 1
             except SettlementConflictError:
+                self.audit_denied(
+                    request,
+                    resource_type="user_profile",
+                    resource_id=profile.pk,
+                    reason="no_settleable_commissions",
+                )
                 skipped += 1
         if settled:
             self.message_user(request, _("Commission settlements created: %(count)d") % {"count": settled})

@@ -1,4 +1,5 @@
 from accounts.models import UserProfile
+from .models import AuditEvent
 
 
 class AdminRoleRequiredMixin:
@@ -46,3 +47,17 @@ class DomainActionAdminMixin(AdminRoleRequiredMixin):
     @staticmethod
     def correlation_id(request):
         return request.correlation_id
+
+    @staticmethod
+    def audit_denied(request, *, resource_type, resource_id, reason):
+        AuditEvent.objects.create(
+            actor=request.user,
+            action="admin.operation_denied",
+            resource_type=resource_type,
+            resource_id=str(resource_id),
+            result=AuditEvent.Result.DENIED,
+            source="admin",
+            correlation_id=request.correlation_id,
+            ip_address=request.META.get("REMOTE_ADDR"),
+            metadata={"reason": reason},
+        )

@@ -44,6 +44,12 @@ class OrderAdmin(DomainActionAdminMixin, admin.ModelAdmin):
                 )
                 completed += 1
             except (DeliveryIdempotencyConflictError, OrderNotDeliverableError):
+                self.audit_denied(
+                    request,
+                    resource_type="order",
+                    resource_id=order.id,
+                    reason="order_not_deliverable",
+                )
                 skipped += 1
         if completed:
             self.message_user(request, _("Completed deliveries: %(count)d") % {"count": completed})

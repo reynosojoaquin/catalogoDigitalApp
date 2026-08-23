@@ -51,6 +51,12 @@ class ReturnReportAdmin(DomainActionAdminMixin, ReadOnlyReturnAdmin):
                 )
                 confirmed += 1
             except ReturnConflictError:
+                self.audit_denied(
+                    request,
+                    resource_type="return_report",
+                    resource_id=report.id,
+                    reason="return_not_confirmable",
+                )
                 skipped += 1
         if confirmed:
             self.message_user(request, _("Confirmed returns: %(count)d") % {"count": confirmed})

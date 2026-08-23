@@ -43,6 +43,12 @@ class PaymentReportAdmin(DomainActionAdminMixin, ReadOnlyFinancialAdmin):
                 )
                 confirmed += 1
             except (PaymentIdempotencyConflictError, PaymentNotConfirmableError):
+                self.audit_denied(
+                    request,
+                    resource_type="payment_report",
+                    resource_id=report.id,
+                    reason="payment_not_confirmable",
+                )
                 skipped += 1
         if confirmed:
             self.message_user(request, _("Confirmed payments: %(count)d") % {"count": confirmed})
