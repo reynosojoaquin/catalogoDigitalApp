@@ -1,7 +1,7 @@
 import hashlib
 import json
 
-from django.db import transaction
+from django.db import IntegrityError, transaction
 
 from catalog.models import Customer, Product
 from catalog.services import (
@@ -47,6 +47,36 @@ def find_replayed_receipt(*, actor, operation_id, idempotency_key, request_hash)
     return None
 
 
+def create_receipt(*, actor, device, operation_id, entity_type, idempotency_key,
+                   request_hash, client_timestamp, client_version, status,
+                   entity_id=None, conflict_code=""):
+    values = {
+        "operation_id": operation_id,
+        "seller": actor,
+        "device": device,
+        "entity_type": entity_type,
+        "idempotency_key": idempotency_key,
+        "request_hash": request_hash,
+        "client_timestamp": client_timestamp,
+        "client_version": client_version,
+        "status": status,
+        "entity_id": entity_id,
+        "conflict_code": conflict_code,
+    }
+    try:
+        with transaction.atomic():
+            return SyncOperationReceipt.objects.create(**values), True
+    except IntegrityError as error:
+        existing = SyncOperationReceipt.objects.filter(idempotency_key=idempotency_key).first()
+        if (
+            existing
+            and existing.seller_id == actor.pk
+            and existing.request_hash == request_hash
+        ):
+            return existing, False
+        raise SyncIdempotencyConflictError from error
+
+
 def customer_request_hash(*, operation_id, customer_id, full_name, email, phone, identity_document, client_timestamp, client_version):
     payload = {
         "operation_id": str(operation_id),
@@ -86,22 +116,20 @@ def sync_customer_create(
             identity_document=identity_document, correlation_id=correlation_id,
         )
     except DuplicateCustomerError:
-        receipt = SyncOperationReceipt.objects.create(
-            operation_id=operation_id, seller=actor, device=device, entity_type="customer",
+        return create_receipt(
+            actor=actor, device=device, operation_id=operation_id, entity_type="customer",
             idempotency_key=idempotency_key, request_hash=request_hash,
             client_timestamp=client_timestamp, client_version=client_version,
             status=SyncOperationReceipt.Status.CONFLICT, entity_id=customer_id,
             conflict_code="duplicate_customer",
         )
-        return receipt, True
 
-    receipt = SyncOperationReceipt.objects.create(
-        operation_id=operation_id, seller=actor, device=device, entity_type="customer",
+    return create_receipt(
+        actor=actor, device=device, operation_id=operation_id, entity_type="customer",
         idempotency_key=idempotency_key, request_hash=request_hash,
         client_timestamp=client_timestamp, client_version=client_version,
         status=SyncOperationReceipt.Status.APPLIED, entity_id=customer.id,
     )
-    return receipt, True
 
 
 @transaction.atomic
