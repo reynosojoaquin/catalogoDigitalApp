@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 
 from accounts.models import UserProfile
+from catalog.models import Product
 
 
 class HealthEndpointTests(TestCase):
@@ -49,3 +50,22 @@ class DashboardTests(TestCase):
         self.client.force_login(user)
 
         self.assertEqual(self.client.get("/dashboard/").status_code, 403)
+
+    def test_custom_resource_view_renders_real_catalog_records_and_searches(self):
+        user = get_user_model().objects.create_superuser(username="resource-admin", password="A-secure-password-123")
+        Product.objects.create(sku="SKU-001", name="Visible product", price="10.00", commission_amount="1.00")
+        Product.objects.create(sku="SKU-002", name="Other product", price="20.00", commission_amount="2.00")
+        self.client.force_login(user)
+
+        response = self.client.get("/app/catalog/?q=Visible")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Visible product")
+        self.assertNotContains(response, "Other product")
+
+    def test_custom_resource_view_denies_non_administrator(self):
+        user = get_user_model().objects.create_user(username="resource-seller", password="A-secure-password-123")
+        UserProfile.objects.create(user=user, role=UserProfile.Role.SELLER)
+        self.client.force_login(user)
+
+        self.assertEqual(self.client.get("/app/orders/").status_code, 403)

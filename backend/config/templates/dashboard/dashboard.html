@@ -14,15 +14,15 @@
     <nav class="side-nav" aria-label="{% translate 'Main navigation' %}">
       <a class="nav-item active" href="{% url 'dashboard' %}"><span class="nav-icon">⌂</span>{% translate "Dashboard" %}</a>
       <div class="nav-label">{% translate "Management" %}</div>
-      <a class="nav-item" href="{% url 'admin:catalog_product_changelist' %}"><span class="nav-icon">▦</span>{% translate "Catalog" %}</a>
-      <a class="nav-item" href="{% url 'admin:catalog_customer_changelist' %}"><span class="nav-icon">◎</span>{% translate "Customers" %}</a>
-      <a class="nav-item" href="{% url 'admin:sales_order_changelist' %}"><span class="nav-icon">▤</span>{% translate "Orders" %}</a>
-      <a class="nav-item" href="{% url 'admin:fulfillment_invoice_changelist' %}"><span class="nav-icon">▧</span>{% translate "Invoices" %}</a>
-      <a class="nav-item" href="{% url 'admin:payments_paymentreport_changelist' %}"><span class="nav-icon">$</span>{% translate "Payments" %}</a>
-      <a class="nav-item" href="{% url 'admin:returns_returnreport_changelist' %}"><span class="nav-icon">↩</span>{% translate "Returns" %}</a>
-      <a class="nav-item" href="{% url 'admin:payments_commissionmovement_changelist' %}"><span class="nav-icon">◈</span>{% translate "Commissions" %}</a>
+      <a class="nav-item" href="{% url 'resource_list' resource='catalog' %}"><span class="nav-icon">▦</span>{% translate "Catalog" %}</a>
+      <a class="nav-item" href="{% url 'resource_list' resource='customers' %}"><span class="nav-icon">◎</span>{% translate "Customers" %}</a>
+      <a class="nav-item" href="{% url 'resource_list' resource='orders' %}"><span class="nav-icon">▤</span>{% translate "Orders" %}</a>
+      <a class="nav-item" href="{% url 'resource_list' resource='invoices' %}"><span class="nav-icon">▧</span>{% translate "Invoices" %}</a>
+      <a class="nav-item" href="{% url 'resource_list' resource='payments' %}"><span class="nav-icon">$</span>{% translate "Payments" %}</a>
+      <a class="nav-item" href="{% url 'resource_list' resource='returns' %}"><span class="nav-icon">↩</span>{% translate "Returns" %}</a>
+      <a class="nav-item" href="{% url 'resource_list' resource='commissions' %}"><span class="nav-icon">◈</span>{% translate "Commissions" %}</a>
       <div class="nav-label">{% translate "Security" %}</div>
-      <a class="nav-item" href="{% url 'admin:audit_auditevent_changelist' %}"><span class="nav-icon">◇</span>{% translate "Audit log" %}</a>
+      <a class="nav-item" href="{% url 'resource_list' resource='audit' %}"><span class="nav-icon">◇</span>{% translate "Audit log" %}</a>
       <a class="nav-item" href="{% url 'admin:index' %}"><span class="nav-icon">⚙</span>{% translate "Administration" %}</a>
     </nav>
     <div class="sidebar-footer">
@@ -36,8 +36,8 @@
       <div class="heading"><div><p class="eyebrow">{% translate "Operations overview" %}</p><h1>{% translate "Good morning" %}, {{ request.user.get_username }}</h1><p class="subtitle">{% translate "Monitor your commercial operation from one place." %}</p></div><a class="admin-link" href="{% url 'admin:index' %}">{% translate "Open administration" %} <span aria-hidden="true">↗</span></a></div>
       <section class="metrics" aria-label="{% translate 'Operational metrics' %}">{% for metric in metrics %}<a class="metric" href="{{ metric.url }}"><span class="metric-label">{{ metric.label }}</span><strong>{{ metric.value }}</strong><span class="metric-link">{% translate "View details" %} <span aria-hidden="true">→</span></span></a>{% endfor %}</section>
       <section class="grid">
-        <article class="panel commission-panel"><div class="panel-heading"><div><p class="panel-kicker">{% translate "Financial summary" %}</p><h2>{% translate "Commission overview" %}</h2></div><span class="panel-badge">{% translate "Live" %}</span></div><dl class="summary"><div><dt>{% translate "Available credit" %}</dt><dd>{{ available_commissions|default:"—" }}</dd></div><div><dt>{% translate "Active devices" %}</dt><dd>{{ active_devices }}</dd></div></dl><a class="action" href="{% url 'admin:payments_commissionmovement_changelist' %}">{% translate "Review commissions" %} <span aria-hidden="true">→</span></a></article>
-        <article class="panel"><div class="panel-heading"><div><p class="panel-kicker">{% translate "Security" %}</p><h2>{% translate "Recent audit activity" %}</h2></div><span class="panel-icon">◇</span></div>{% if recent_events %}<ul class="events">{% for event in recent_events %}<li><span class="event-action">{{ event.action }}</span><span class="event-result">{{ event.result }}</span><time datetime="{{ event.occurred_at|date:'c' }}">{{ event.occurred_at|date:'SHORT_DATETIME_FORMAT' }}</time></li>{% endfor %}</ul>{% else %}<p class="muted">{% translate "No activity recorded yet." %}</p>{% endif %}<a class="action" href="{% url 'admin:audit_auditevent_changelist' %}">{% translate "View audit log" %} <span aria-hidden="true">→</span></a></article>
+        <article class="panel commission-panel"><div class="panel-heading"><div><p class="panel-kicker">{% translate "Financial summary" %}</p><h2>{% translate "Commission overview" %}</h2></div><span class="panel-badge">{% translate "Live" %}</span></div><dl class="summary"><div><dt>{% translate "Available credit" %}</dt><dd>{{ available_commissions|default:"—" }}</dd></div><div><dt>{% translate "Active devices" %}</dt><dd>{{ active_devices }}</dd></div></dl><a class="action" href="{% url 'resource_list' resource='commissions' %}">{% translate "Review commissions" %} <span aria-hidden="true">→</span></a></article>
+        <article class="panel"><div class="panel-heading"><div><p class="panel-kicker">{% translate "Security" %}</p><h2>{% translate "Recent audit activity" %}</h2></div><span class="panel-icon">◇</span></div>{% if recent_events %}<ul class="events">{% for event in recent_events %}<li><span class="event-action">{{ event.action }}</span><span class="event-result">{{ event.result }}</span><time datetime="{{ event.occurred_at|date:'c' }}">{{ event.occurred_at|date:'SHORT_DATETIME_FORMAT' }}</time></li>{% endfor %}</ul>{% else %}<p class="muted">{% translate "No activity recorded yet." %}</p>{% endif %}<a class="action" href="{% url 'resource_list' resource='audit' %}">{% translate "View audit log" %} <span aria-hidden="true">→</span></a></article>
       </section>
     </main>
   </div>

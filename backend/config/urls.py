@@ -2,10 +2,11 @@ from django.contrib import admin
 from django.urls import include, path
 
 from .views import health
-from .web_views import dashboard
+from .web_views import dashboard, resource_list
 
 urlpatterns = [
     path("dashboard/", dashboard, name="dashboard"),
+    path("app/<slug:resource>/", resource_list, name="resource_list"),
     path("admin/", admin.site.urls),
     path("api/auth/", include("accounts.auth_urls")),
     path("api/", include("accounts.urls")),
