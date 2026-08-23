@@ -1,4 +1,8 @@
 .env
+.env.*
+!.env.example
+!.env.test.example
+!.env.production.example
 .env.production
 .env.test
 .venv/
@@ -19,5 +23,10 @@ android/**/build/
 android/.idea/
 android/*.jks
 android/*.keystore
+android/*.pem
+android/*.p12
+*.pem
+*.p12
+.secrets/
 .android-sdk/
 .tool-downloads/
