@@ -90,6 +90,14 @@ class DeviceRegistrationApiTests(APITestCase):
 
         self.assertEqual(response.status_code, 409)
         self.assertEqual(Device.objects.get(pk=device_id).user, first_seller)
+        self.assertTrue(
+            AuditEvent.objects.filter(
+                actor=second_seller,
+                action="device.registration_denied",
+                resource_id=str(device_id),
+                result=AuditEvent.Result.DENIED,
+            ).exists()
+        )
 
 
 class AuthenticationAuditTests(APITestCase):
