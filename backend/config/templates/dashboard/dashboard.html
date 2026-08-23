@@ -1,0 +1,45 @@
+{% load i18n static %}
+<!doctype html>
+<html lang="{{ LANGUAGE_CODE|default:'es-do' }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ page_title }} · Catálogo Digital</title>
+  <link rel="stylesheet" href="{% static 'dashboard/dashboard.css' %}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="{% url 'dashboard' %}">Catálogo Digital</a>
+    <nav aria-label="{% translate 'Main navigation' %}">
+      <a href="{% url 'dashboard' %}" aria-current="page">{% translate "Dashboard" %}</a>
+      <a href="{% url 'admin:index' %}">{% translate "Administration" %}</a>
+      <form method="post" action="{% url 'admin:logout' %}">
+        {% csrf_token %}<button type="submit">{% translate "Sign out" %}</button>
+      </form>
+    </nav>
+  </header>
+  <main class="shell">
+    <div class="heading">
+      <div><p class="eyebrow">{% translate "Operations" %}</p><h1>{{ page_title }}</h1></div>
+      <p class="signed-in">{% translate "Signed in as" %} <strong>{{ request.user.get_username }}</strong></p>
+    </div>
+    <section class="metrics" aria-label="{% translate 'Operational metrics' %}">
+      {% for metric in metrics %}
+      <a class="metric" href="{{ metric.url }}"><span>{{ metric.label }}</span><strong>{{ metric.value }}</strong></a>
+      {% endfor %}
+    </section>
+    <section class="grid">
+      <article class="panel">
+        <h2>{% translate "Commission overview" %}</h2>
+        <dl class="summary"><div><dt>{% translate "Available credit" %}</dt><dd>{{ available_commissions|default:"—" }}</dd></div><div><dt>{% translate "Active devices" %}</dt><dd>{{ active_devices }}</dd></div></dl>
+        <a class="action" href="{% url 'admin:payments_commissionmovement_changelist' %}">{% translate "Review commissions" %} <span aria-hidden="true">→</span></a>
+      </article>
+      <article class="panel">
+        <h2>{% translate "Recent audit activity" %}</h2>
+        {% if recent_events %}<ul class="events">{% for event in recent_events %}<li><span class="event-action">{{ event.action }}</span><span>{{ event.result }}</span><time datetime="{{ event.occurred_at|date:'c' }}">{{ event.occurred_at|date:'SHORT_DATETIME_FORMAT' }}</time></li>{% endfor %}</ul>{% else %}<p class="muted">{% translate "No activity recorded yet." %}</p>{% endif %}
+        <a class="action" href="{% url 'admin:audit_auditevent_changelist' %}">{% translate "View audit log" %} <span aria-hidden="true">→</span></a>
+      </article>
+    </section>
+  </main>
+</body>
+</html>

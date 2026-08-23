@@ -61,6 +61,8 @@ Caddy termina TLS automáticamente. El backend no se expone directamente, sirve 
 
 ## Administración web
 
+El dashboard operativo está disponible en `/dashboard/` para usuarios administradores autenticados. Muestra los pendientes de productos, clientes, pedidos, facturas, pagos y devoluciones, además del resumen de comisiones, dispositivos activos y actividad de auditoría. Los enlaces llevan al detalle protegido del panel Django; no se cargan datos de ejemplo.
+
 El panel `/admin/` permite consultar documentos históricos sin editarlos. Los flujos operativos se ejecutan mediante acciones sobre los registros seleccionados:
 
 - Confirmar entrega completa desde pedidos; la factura interna se genera en la misma transacción.

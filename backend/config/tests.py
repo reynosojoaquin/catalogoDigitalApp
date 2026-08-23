@@ -1,6 +1,9 @@
 import uuid
 
+from django.contrib.auth import get_user_model
 from django.test import TestCase
+
+from accounts.models import UserProfile
 
 
 class HealthEndpointTests(TestCase):
@@ -21,3 +24,28 @@ class HealthEndpointTests(TestCase):
         response = self.client.get("/health/", headers={"X-Correlation-ID": "invalid"})
 
         uuid.UUID(response.headers["X-Correlation-ID"])
+
+
+class DashboardTests(TestCase):
+    def test_dashboard_requires_authentication(self):
+        response = self.client.get("/dashboard/")
+
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/admin/login/", response["Location"])
+
+    def test_dashboard_is_available_to_administrator(self):
+        user = get_user_model().objects.create_user(username="dashboard-admin", password="A-secure-password-123")
+        UserProfile.objects.create(user=user, role=UserProfile.Role.ADMIN)
+        self.client.force_login(user)
+
+        response = self.client.get("/dashboard/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Administration dashboard")
+
+    def test_dashboard_denies_sellers(self):
+        user = get_user_model().objects.create_user(username="dashboard-seller", password="A-secure-password-123")
+        UserProfile.objects.create(user=user, role=UserProfile.Role.SELLER)
+        self.client.force_login(user)
+
+        self.assertEqual(self.client.get("/dashboard/").status_code, 403)
