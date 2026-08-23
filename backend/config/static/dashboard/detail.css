@@ -1,0 +1,12 @@
+.detail-panel { max-width: 1040px; min-height: 0; padding: 28px; }
+.detail-grid { display: grid; gap: 0 30px; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0; }
+.detail-grid div { border-bottom: 1px solid var(--line); padding: 18px 0; }
+.detail-grid dt { color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .05em; margin-bottom: 6px; text-transform: uppercase; }
+.detail-grid dd { font-size: 14px; font-weight: 650; margin: 0; overflow-wrap: anywhere; }
+.related { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 24px; }
+.related h2 { margin-bottom: 14px; }
+.detail-action { border-top: 1px solid var(--line); margin-top: 24px; padding-top: 22px; }
+.flash { border-radius: 7px; font-size: 13px; margin-bottom: 20px; padding: 12px 16px; }
+.flash.success { background: rgba(34, 160, 107, .12); color: var(--good); }
+.flash.error, .flash.warning { background: rgba(210, 83, 83, .12); color: #c24646; }
+@media (max-width: 650px) { .detail-panel { padding: 20px; } .detail-grid { grid-template-columns: 1fr; } }
