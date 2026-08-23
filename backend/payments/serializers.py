@@ -6,18 +6,7 @@ from .models import CommissionMovement, PaymentConfirmation, PaymentReport
 
 def looks_like_card_number(value):
     digits = "".join(character for character in value if character.isdigit())
-    if not 13 <= len(digits) <= 19:
-        return False
-    checksum = 0
-    parity = len(digits) % 2
-    for index, character in enumerate(digits):
-        number = int(character)
-        if index % 2 == parity:
-            number *= 2
-            if number > 9:
-                number -= 9
-        checksum += number
-    return checksum % 10 == 0
+    return 13 <= len(digits) <= 19
 
 
 class PaymentReportCreateSerializer(serializers.Serializer):

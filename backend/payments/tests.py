@@ -168,6 +168,18 @@ class PaymentApiTests(APITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertFalse(PaymentReport.objects.exists())
 
+    def test_card_length_value_is_rejected_even_without_luhn_checksum(self):
+        self.authenticate(self.seller)
+        payload = self.payment_payload(
+            method=PaymentReport.Method.EXTERNAL_CARD_TERMINAL,
+            external_terminal_reference="4111 1111 1111 1112",
+        )
+
+        response = self.post_payment(payload)
+
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(PaymentReport.objects.exists())
+
     def test_payment_report_is_idempotent(self):
         self.authenticate(self.seller)
         payload = self.payment_payload()

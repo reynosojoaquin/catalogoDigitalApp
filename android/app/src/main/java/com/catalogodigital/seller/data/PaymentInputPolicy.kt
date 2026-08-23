@@ -28,17 +28,6 @@ object PaymentInputPolicy {
 
     fun looksLikeCardNumber(value: String): Boolean {
         val digits = value.filter(Char::isDigit)
-        if (digits.length !in 13..19) return false
-        var checksum = 0
-        val parity = digits.length % 2
-        digits.forEachIndexed { index, character ->
-            var number = character.digitToInt()
-            if (index % 2 == parity) {
-                number *= 2
-                if (number > 9) number -= 9
-            }
-            checksum += number
-        }
-        return checksum % 10 == 0
+        return digits.length in 13..19
     }
 }

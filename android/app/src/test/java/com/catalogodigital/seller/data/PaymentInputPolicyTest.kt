@@ -33,6 +33,16 @@ class PaymentInputPolicyTest {
     }
 
     @Test
+    fun rejectsCardLengthReferenceWithoutChecksum() {
+        assertThrows(IllegalArgumentException::class.java) {
+            PaymentInputPolicy.normalize(
+                PaymentMethod.EXTERNAL_CARD_TERMINAL,
+                "4111 1111 1111 1112",
+            )
+        }
+    }
+
+    @Test
     fun acceptsOpaqueTerminalReference() {
         PaymentInputPolicy.normalize(
             PaymentMethod.EXTERNAL_CARD_TERMINAL,
