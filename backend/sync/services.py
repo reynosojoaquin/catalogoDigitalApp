@@ -4,6 +4,7 @@ import json
 from django.db import IntegrityError, transaction
 
 from catalog.models import Customer, Product
+from audit.models import AuditEvent
 from catalog.services import (
     DuplicateCustomerError, create_customer, fingerprint_identity_document,
     normalize_email, normalize_phone,
@@ -65,7 +66,19 @@ def create_receipt(*, actor, device, operation_id, entity_type, idempotency_key,
     }
     try:
         with transaction.atomic():
-            return SyncOperationReceipt.objects.create(**values), True
+            receipt = SyncOperationReceipt.objects.create(**values)
+            if status != SyncOperationReceipt.Status.APPLIED:
+                AuditEvent.objects.create(
+                    actor=actor,
+                    action="sync.operation_denied",
+                    resource_type=entity_type,
+                    resource_id=str(operation_id),
+                    result=AuditEvent.Result.DENIED,
+                    source="android",
+                    correlation_id=operation_id,
+                    metadata={"status": status, "conflict_code": conflict_code},
+                )
+            return receipt, True
     except IntegrityError as error:
         existing = SyncOperationReceipt.objects.filter(idempotency_key=idempotency_key).first()
         if (
