@@ -7,6 +7,7 @@ import com.catalogodigital.seller.data.local.SyncCursor
 import com.catalogodigital.seller.security.KeystoreCipher
 import com.catalogodigital.seller.sync.BusinessFeedPage
 import com.catalogodigital.seller.sync.BusinessFeedPolicy
+import com.catalogodigital.seller.sync.FeedVersionPolicy
 import com.catalogodigital.seller.sync.MoneyParser
 import org.json.JSONObject
 
@@ -21,7 +22,7 @@ class BusinessFeedRepository(
         BusinessFeedPolicy.requireValid(currentCursor, page)
         page.changes.forEach { change ->
             val dao = database.businessDocumentDao()
-            if ((dao.version(change.entityType, change.entityId) ?: 0) <= change.version) {
+            if (FeedVersionPolicy.shouldApply(dao.version(change.entityType, change.entityId), change.version)) {
                 val data = JSONObject(change.dataJson)
                 val encrypted = cipher.encrypt(change.dataJson.encodeToByteArray())
                 val status = data.optString("status").ifBlank { null }

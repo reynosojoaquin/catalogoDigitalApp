@@ -7,6 +7,7 @@ import com.catalogodigital.seller.data.local.ProductEntity
 import com.catalogodigital.seller.data.local.SyncCursor
 import com.catalogodigital.seller.sync.CatalogFeedPage
 import com.catalogodigital.seller.sync.CatalogFeedPolicy
+import com.catalogodigital.seller.sync.FeedVersionPolicy
 import com.catalogodigital.seller.sync.MoneyParser
 import com.catalogodigital.seller.sync.boolean
 import com.catalogodigital.seller.sync.long
@@ -22,7 +23,7 @@ class CatalogFeedRepository(private val database: CatalogDatabase) {
         val dao = database.catalogDao()
         page.changes.forEach { change ->
             if (change.entityType == "customer") {
-                if ((dao.customerVersion(change.entityId) ?: 0) <= change.version) {
+                if (FeedVersionPolicy.shouldApply(dao.customerVersion(change.entityId), change.version)) {
                     dao.upsertCustomer(CustomerEntity(
                         id = change.data.string("id"),
                         fullName = change.data.string("full_name"),
@@ -35,7 +36,7 @@ class CatalogFeedRepository(private val database: CatalogDatabase) {
                     database.customerDraftDao().deleteById(change.entityId)
                 }
             } else {
-                if ((dao.productVersion(change.entityId) ?: 0) <= change.version) {
+                if (FeedVersionPolicy.shouldApply(dao.productVersion(change.entityId), change.version)) {
                     dao.upsertProduct(ProductEntity(
                         id = change.data.string("id"),
                         sku = change.data.string("sku"),

@@ -1,11 +1,21 @@
 package com.catalogodigital.seller.sync
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Assert.assertThrows
 import org.junit.Test
 import java.util.UUID
 
 class CatalogFeedPolicyTest {
+    @Test
+    fun appliesOnlyStrictlyNewFeedVersions() {
+        assertTrue(FeedVersionPolicy.shouldApply(null, 1))
+        assertTrue(FeedVersionPolicy.shouldApply(1, 2))
+        assertFalse(FeedVersionPolicy.shouldApply(2, 2))
+        assertFalse(FeedVersionPolicy.shouldApply(3, 2))
+    }
+
     @Test
     fun acceptsMonotonicPageWithMatchingIdentityAndVersion() {
         val change = change(sequence = 4, version = 2)

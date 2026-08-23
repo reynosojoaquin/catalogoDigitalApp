@@ -16,6 +16,11 @@ data class CatalogFeedChange(
     val data: Map<String, Any?>,
 )
 
+object FeedVersionPolicy {
+    fun shouldApply(localVersion: Long?, remoteVersion: Long): Boolean =
+        localVersion == null || remoteVersion > localVersion
+}
+
 object CatalogFeedPolicy {
     fun requireValid(currentCursor: Long, page: CatalogFeedPage) {
         require(page.nextCursor >= currentCursor) { "The catalog cursor cannot move backwards." }
