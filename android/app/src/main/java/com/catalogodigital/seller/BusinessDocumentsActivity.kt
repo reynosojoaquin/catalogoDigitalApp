@@ -1,6 +1,7 @@
 package com.catalogodigital.seller
 
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
 import com.catalogodigital.seller.data.local.BusinessDocumentEntity
@@ -14,6 +15,7 @@ class BusinessDocumentsActivity : AuthenticatedActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         binding = ActivityBusinessDocumentsBinding.inflate(layoutInflater)
         setContentView(binding.root)
         val dao = (application as CatalogApplication).database.businessDocumentDao()
