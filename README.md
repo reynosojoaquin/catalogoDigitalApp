@@ -45,8 +45,7 @@ Con un emulador o dispositivo conectado, ejecutar además `.\gradlew.bat connect
 1. Crear `.env.production` a partir de `.env.production.example` con secretos aleatorios y el dominio real.
 2. Definir `APP_VERSION` con una versión inmutable de la aplicación.
 3. Construir la imagen: `docker compose -f compose.production.yaml build backend`.
-4. Aplicar migraciones: `docker compose -f compose.production.yaml run --rm backend python manage.py migrate`.
-5. Iniciar servicios: `docker compose -f compose.production.yaml up -d`.
+4. Iniciar servicios: `docker compose -f compose.production.yaml up -d` (el contenedor aplica las migraciones antes de servir tráfico).
 
 Caddy termina TLS automáticamente. El backend no se expone directamente, sirve archivos estáticos con WhiteNoise y valida que depuración esté desactivada y que exista una lista explícita de hosts permitidos.
 

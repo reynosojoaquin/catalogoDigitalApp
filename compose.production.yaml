@@ -40,7 +40,7 @@ services:
     environment:
       APP_ENV: production
       DJANGO_DEBUG: "false"
-    command: ["sh", "-c", "python manage.py collectstatic --noinput && exec gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --access-logfile -"]
+    command: ["sh", "-c", "python manage.py migrate --noinput && python manage.py collectstatic --noinput && exec gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --access-logfile -"]
     depends_on:
       db:
         condition: service_healthy
