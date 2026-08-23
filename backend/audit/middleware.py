@@ -1,6 +1,7 @@
 import uuid
 
 from django.http import HttpResponseForbidden
+from django.utils.translation import gettext_lazy as _
 
 from accounts.models import UserProfile
 
@@ -33,7 +34,7 @@ class AdminRoleMiddleware:
             if not request.user.is_superuser and (
                 not request.user.is_staff or profile is None or profile.role != UserProfile.Role.ADMIN
             ):
-                return HttpResponseForbidden("Administrator access required.")
+                return HttpResponseForbidden(_("Administrator access required."))
         return self.get_response(request)
 
 
