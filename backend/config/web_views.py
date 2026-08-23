@@ -1,9 +1,13 @@
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.db.models import Sum
+import uuid
+
+from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from accounts.models import Device, UserProfile
@@ -13,6 +17,9 @@ from fulfillment.models import Invoice
 from payments.models import CommissionMovement, PaymentReport
 from returns.models import ReturnReport
 from sales.models import Order
+from fulfillment.services import DeliveryIdempotencyConflictError, OrderNotDeliverableError, confirm_complete_delivery
+from payments.services import PaymentIdempotencyConflictError, PaymentNotConfirmableError, confirm_payment
+from returns.services import ReturnConflictError, confirm_return
 
 
 def _is_administrator(user):
@@ -150,6 +157,41 @@ def resource_detail(request, resource, pk):
             queryset = queryset.select_related(relation)
     item = get_object_or_404(queryset, pk=pk)
     fields = [{"label": label, "value": _value_for_column(item, field)} for field, label in config["columns"]]
+    action = None
+    if resource == "orders" and item.status == Order.Status.SUBMITTED:
+        action = {"label": _("Confirm complete delivery"), "key": "delivery"}
+    elif resource == "payments" and item.status == PaymentReport.Status.REPORTED:
+        action = {"label": _("Confirm total payment"), "key": "payment"}
+    elif resource == "returns" and item.status == ReturnReport.Status.REPORTED:
+        action = {"label": _("Confirm return"), "key": "return"}
     return render(request, "dashboard/resource_detail.html", {
         "page_title": config["title"], "resource": resource, "item": item, "fields": fields,
+        "action": action, "action_idempotency_key": uuid.uuid4(),
     })
+
+
+@login_required(login_url="/admin/login/")
+def resource_action(request, resource, pk):
+    if not _is_administrator(request.user) or request.method != "POST":
+        raise PermissionDenied
+    try:
+        idempotency_key = uuid.UUID(request.POST.get("idempotency_key", ""))
+    except (ValueError, TypeError, AttributeError):
+        messages.error(request, _("The operation key is invalid."))
+        return redirect("resource_detail", resource=resource, pk=pk)
+    now = timezone.now()
+    try:
+        if resource == "orders":
+            confirm_complete_delivery(actor=request.user, delivery_id=uuid.uuid4(), order_id=pk, delivered_at=now, idempotency_key=idempotency_key, correlation_id=request.correlation_id)
+        elif resource == "payments":
+            confirm_payment(actor=request.user, confirmation_id=uuid.uuid4(), payment_report_id=pk, confirmed_at=now, idempotency_key=idempotency_key, correlation_id=request.correlation_id)
+        elif resource == "returns":
+            confirm_return(actor=request.user, confirmation_id=uuid.uuid4(), return_report_id=pk, confirmed_at=now, idempotency_key=idempotency_key, correlation_id=request.correlation_id)
+        else:
+            raise PermissionDenied
+    except (DeliveryIdempotencyConflictError, OrderNotDeliverableError, PaymentIdempotencyConflictError, PaymentNotConfirmableError, ReturnConflictError) as error:
+        AuditEvent.objects.create(actor=request.user, action="frontend.operation_denied", resource_type=resource, resource_id=str(pk), result=AuditEvent.Result.DENIED, source="web", correlation_id=request.correlation_id, metadata={"reason": error.__class__.__name__})
+        messages.error(request, _("The operation could not be completed because the record is no longer eligible."))
+        return redirect("resource_detail", resource=resource, pk=pk)
+    messages.success(request, _("Operation completed successfully."))
+    return redirect("resource_detail", resource=resource, pk=pk)
