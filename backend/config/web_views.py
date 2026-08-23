@@ -20,6 +20,7 @@ from sales.models import Order
 from fulfillment.services import DeliveryIdempotencyConflictError, OrderNotDeliverableError, confirm_complete_delivery
 from payments.services import PaymentIdempotencyConflictError, PaymentNotConfirmableError, confirm_payment
 from returns.services import ReturnConflictError, confirm_return
+from settlements.services import SettlementConflictError, confirm_settlement
 
 
 def _is_administrator(user):
@@ -164,6 +165,8 @@ def resource_detail(request, resource, pk):
         action = {"label": _("Confirm total payment"), "key": "payment"}
     elif resource == "returns" and item.status == ReturnReport.Status.REPORTED:
         action = {"label": _("Confirm return"), "key": "return"}
+    elif resource == "commissions" and item.status == CommissionMovement.Status.AVAILABLE:
+        action = {"label": _("Settle available commissions for this seller"), "key": "settlement"}
     return render(request, "dashboard/resource_detail.html", {
         "page_title": config["title"], "resource": resource, "item": item, "fields": fields,
         "action": action, "action_idempotency_key": uuid.uuid4(),
@@ -187,9 +190,12 @@ def resource_action(request, resource, pk):
             confirm_payment(actor=request.user, confirmation_id=uuid.uuid4(), payment_report_id=pk, confirmed_at=now, idempotency_key=idempotency_key, correlation_id=request.correlation_id)
         elif resource == "returns":
             confirm_return(actor=request.user, confirmation_id=uuid.uuid4(), return_report_id=pk, confirmed_at=now, idempotency_key=idempotency_key, correlation_id=request.correlation_id)
+        elif resource == "commissions":
+            movement = get_object_or_404(CommissionMovement, pk=pk)
+            confirm_settlement(actor=request.user, settlement_id=uuid.uuid4(), seller_id=movement.seller_id, period_ends_at=now, confirmed_at=now, idempotency_key=idempotency_key, correlation_id=request.correlation_id)
         else:
             raise PermissionDenied
-    except (DeliveryIdempotencyConflictError, OrderNotDeliverableError, PaymentIdempotencyConflictError, PaymentNotConfirmableError, ReturnConflictError) as error:
+    except (DeliveryIdempotencyConflictError, OrderNotDeliverableError, PaymentIdempotencyConflictError, PaymentNotConfirmableError, ReturnConflictError, SettlementConflictError) as error:
         AuditEvent.objects.create(actor=request.user, action="frontend.operation_denied", resource_type=resource, resource_id=str(pk), result=AuditEvent.Result.DENIED, source="web", correlation_id=request.correlation_id, metadata={"reason": error.__class__.__name__})
         messages.error(request, _("The operation could not be completed because the record is no longer eligible."))
         return redirect("resource_detail", resource=resource, pk=pk)
