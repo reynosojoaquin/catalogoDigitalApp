@@ -69,7 +69,7 @@ class SyncWorker(context: Context, parameters: WorkerParameters) : CoroutineWork
             ) {
                 SyncFailureAction.AUTHENTICATION_REQUIRED -> {
                     operations.forEach { dao.updateResult(it.operationId, OperationStatus.PENDING, null) }
-                    SessionStore(applicationContext).clear()
+                    SessionStore(applicationContext).clearToken()
                     Result.failure()
                 }
                 SyncFailureAction.REJECT_BATCH -> {

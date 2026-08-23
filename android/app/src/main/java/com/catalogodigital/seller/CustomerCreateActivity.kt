@@ -15,7 +15,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class CustomerCreateActivity : ComponentActivity() {
+class CustomerCreateActivity : AuthenticatedActivity() {
     private lateinit var binding: ActivityCustomerCreateBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {

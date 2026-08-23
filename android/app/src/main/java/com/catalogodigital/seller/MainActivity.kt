@@ -9,12 +9,15 @@ import androidx.lifecycle.lifecycleScope
 import com.catalogodigital.seller.data.local.OperationStatus
 import com.catalogodigital.seller.databinding.ActivityMainBinding
 import com.catalogodigital.seller.sync.SyncScheduler
+import com.catalogodigital.seller.security.SessionStore
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private lateinit var binding: ActivityMainBinding
+    private var loginInProgress = false
     private val login = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == RESULT_OK) SyncScheduler.runNow(this)
+        loginInProgress = false
+        if (result.resultCode == RESULT_OK) SyncScheduler.runNow(this) else finish()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,11 +47,13 @@ class MainActivity : ComponentActivity() {
         binding.syncNow.setOnClickListener {
             if (BuildConfig.API_BASE_URL.isBlank()) {
                 Toast.makeText(this, R.string.sync_configuration_missing, Toast.LENGTH_LONG).show()
-            } else if (com.catalogodigital.seller.security.SessionStore(this).token().isNullOrBlank()) {
-                login.launch(Intent(this, LoginActivity::class.java))
             } else {
                 SyncScheduler.runNow(this)
             }
+        }
+        binding.logout.setOnClickListener {
+            SessionStore(this).clearToken()
+            requireSession()
         }
 
         val dao = (application as CatalogApplication).database.pendingOperationDao()
@@ -59,6 +64,19 @@ class MainActivity : ComponentActivity() {
                 binding.conflictCount.text = getString(R.string.sync_conflicts, indexed[OperationStatus.CONFLICT] ?: 0)
                 binding.rejectedCount.text = getString(R.string.sync_rejected, indexed[OperationStatus.REJECTED] ?: 0)
             }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        requireSession()
+    }
+
+    private fun requireSession() {
+        if (isFinishing || isDestroyed) return
+        if (!SessionStore(this).hasCompleteSession() && !loginInProgress) {
+            loginInProgress = true
+            login.launch(Intent(this, LoginActivity::class.java))
         }
     }
 }

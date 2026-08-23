@@ -31,6 +31,8 @@
     <string name="login_action">Sign in</string>
     <string name="login_failed">Unable to sign in. Check your credentials and connection.</string>
     <string name="login_required">Sign in to synchronize.</string>
+    <string name="login_account_switch_blocked">You cannot switch accounts while operations are pending, rejected, or in conflict.</string>
+    <string name="logout_action">Sign out</string>
     <string name="customer_create_title">New customer</string>
     <string name="customer_full_name">Full name</string>
     <string name="customer_email">Email</string>

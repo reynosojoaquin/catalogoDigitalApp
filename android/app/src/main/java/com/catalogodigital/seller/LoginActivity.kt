@@ -9,6 +9,9 @@ import com.catalogodigital.seller.auth.AuthApiClient
 import com.catalogodigital.seller.databinding.ActivityLoginBinding
 import com.catalogodigital.seller.security.DeviceIdentity
 import com.catalogodigital.seller.security.SessionStore
+import com.catalogodigital.seller.security.SessionSwitchAction
+import com.catalogodigital.seller.security.SessionSwitchPolicy
+import com.catalogodigital.seller.data.local.OperationStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
@@ -35,15 +38,35 @@ class LoginActivity : ComponentActivity() {
         binding.login.isEnabled = false
         lifecycleScope.launch {
             try {
-                val token = withContext(Dispatchers.IO) {
+                withContext(Dispatchers.IO) {
                     val client = AuthApiClient(BuildConfig.API_BASE_URL)
-                    client.authenticate(username, password).also {
-                        client.registerDevice(it, DeviceIdentity(this@LoginActivity).id().toString(), BuildConfig.VERSION_NAME)
+                    val session = client.authenticate(username, password)
+                    client.registerDevice(
+                        session.token,
+                        DeviceIdentity(this@LoginActivity).id().toString(),
+                        BuildConfig.VERSION_NAME,
+                    )
+                    val store = SessionStore(this@LoginActivity)
+                    val database = (application as CatalogApplication).database
+                    val unresolved = database.pendingOperationDao().countByStatuses(
+                        listOf(
+                            OperationStatus.PENDING,
+                            OperationStatus.IN_FLIGHT,
+                            OperationStatus.CONFLICT,
+                            OperationStatus.REJECTED,
+                        ),
+                    )
+                    when (SessionSwitchPolicy.action(store.userId(), session.userId, unresolved)) {
+                        SessionSwitchAction.KEEP_DATA -> Unit
+                        SessionSwitchAction.CLEAR_DATA -> database.clearAllTables()
+                        SessionSwitchAction.BLOCK -> throw AccountSwitchBlockedException()
                     }
+                    store.save(session.token, session.userId)
                 }
-                SessionStore(this@LoginActivity).saveToken(token)
                 setResult(Activity.RESULT_OK)
                 finish()
+            } catch (_: AccountSwitchBlockedException) {
+                Toast.makeText(this@LoginActivity, R.string.login_account_switch_blocked, Toast.LENGTH_LONG).show()
             } catch (error: Exception) {
                 if (error is CancellationException) throw error
                 showFailure()
@@ -57,3 +80,5 @@ class LoginActivity : ComponentActivity() {
 
     private fun showFailure() = Toast.makeText(this, R.string.login_failed, Toast.LENGTH_LONG).show()
 }
+
+private class AccountSwitchBlockedException : Exception()

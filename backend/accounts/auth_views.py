@@ -48,4 +48,4 @@ class AuditedAuthTokenView(ObtainAuthToken):
             correlation_id=request.correlation_id,
             ip_address=self.client_ip(request),
         )
-        return Response({"token": token.key})
+        return Response({"token": token.key, "user_id": str(user.pk)})

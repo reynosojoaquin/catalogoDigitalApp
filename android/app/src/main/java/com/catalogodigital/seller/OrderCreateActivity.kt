@@ -21,7 +21,7 @@ import kotlinx.coroutines.withContext
 import java.math.BigDecimal
 import java.text.NumberFormat
 
-class OrderCreateActivity : ComponentActivity() {
+class OrderCreateActivity : AuthenticatedActivity() {
     private lateinit var binding: ActivityOrderCreateBinding
     private lateinit var repository: OfflineOrderRepository
     private var customers = emptyList<CustomerOption>()

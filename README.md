@@ -75,4 +75,6 @@ Los intentos de inicio de sesión se limitan mediante Redis y se auditan sin alm
 
 Los feeds de catálogo y operaciones exigen el UUID de un dispositivo activo perteneciente al vendedor. Al revocar un dispositivo desde la administración, este deja de descargar información y la aplicación elimina la sesión local al recibir la denegación.
 
+Android cifra por separado el token y el identificador estable del vendedor. Las pantallas comerciales requieren una sesión local completa. Un cambio de cuenta nunca reutiliza el caché anterior y se bloquea mientras existan operaciones pendientes, rechazadas o en conflicto, evitando pérdida o exposición cruzada de datos offline.
+
 Consulta [AGENTS.md](AGENTS.md) para las reglas funcionales y técnicas del proyecto.

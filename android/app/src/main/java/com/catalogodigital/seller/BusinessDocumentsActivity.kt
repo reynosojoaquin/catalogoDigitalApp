@@ -9,7 +9,7 @@ import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import java.text.NumberFormat
 
-class BusinessDocumentsActivity : ComponentActivity() {
+class BusinessDocumentsActivity : AuthenticatedActivity() {
     private lateinit var binding: ActivityBusinessDocumentsBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {

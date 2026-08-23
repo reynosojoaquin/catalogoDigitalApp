@@ -22,7 +22,7 @@ import kotlinx.coroutines.withContext
 import java.math.BigDecimal
 import java.text.NumberFormat
 
-class ReturnCreateActivity : ComponentActivity() {
+class ReturnCreateActivity : AuthenticatedActivity() {
     private lateinit var binding: ActivityReturnCreateBinding
     private lateinit var repository: OfflineReturnRepository
     private var invoices = emptyList<ReturnableInvoice>()

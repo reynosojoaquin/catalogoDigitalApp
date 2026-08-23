@@ -109,6 +109,7 @@ class AuthenticationAuditTests(APITestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("token", response.data)
+        self.assertEqual(response.data["user_id"], str(user.pk))
         self.assertTrue(
             AuditEvent.objects.filter(
                 actor=user,

@@ -6,29 +6,42 @@ import android.util.Base64
 class SessionStore(context: Context, private val cipher: KeystoreCipher = KeystoreCipher()) {
     private val preferences = context.getSharedPreferences("secure_session", Context.MODE_PRIVATE)
 
-    fun saveToken(token: String) {
-        val encrypted = cipher.encrypt(token.encodeToByteArray())
+    fun save(token: String, userId: String) {
+        val encryptedToken = cipher.encrypt(token.encodeToByteArray())
+        val encryptedUserId = cipher.encrypt(userId.encodeToByteArray())
         preferences.edit()
-            .putString(TOKEN, Base64.encodeToString(encrypted.ciphertext, Base64.NO_WRAP))
-            .putString(TOKEN_IV, Base64.encodeToString(encrypted.iv, Base64.NO_WRAP))
+            .putString(TOKEN, encode(encryptedToken.ciphertext))
+            .putString(TOKEN_IV, encode(encryptedToken.iv))
+            .putString(USER_ID, encode(encryptedUserId.ciphertext))
+            .putString(USER_ID_IV, encode(encryptedUserId.iv))
             .apply()
     }
 
-    fun token(): String? {
-        val ciphertext = preferences.getString(TOKEN, null) ?: return null
-        val iv = preferences.getString(TOKEN_IV, null) ?: return null
-        return cipher.decrypt(
-            EncryptedValue(
-                Base64.decode(ciphertext, Base64.NO_WRAP),
-                Base64.decode(iv, Base64.NO_WRAP),
-            ),
-        ).decodeToString()
-    }
+    fun token(): String? = read(TOKEN, TOKEN_IV)
+
+    fun userId(): String? = read(USER_ID, USER_ID_IV)
+
+    fun hasCompleteSession(): Boolean = !token().isNullOrBlank() && !userId().isNullOrBlank()
+
+    fun clearToken() = preferences.edit().remove(TOKEN).remove(TOKEN_IV).apply()
 
     fun clear() = preferences.edit().clear().apply()
+
+    private fun read(valueKey: String, ivKey: String): String? = try {
+        val ciphertext = preferences.getString(valueKey, null) ?: return null
+        val iv = preferences.getString(ivKey, null) ?: return null
+        cipher.decrypt(EncryptedValue(decode(ciphertext), decode(iv))).decodeToString()
+    } catch (_: RuntimeException) {
+        null
+    }
+
+    private fun encode(value: ByteArray): String = Base64.encodeToString(value, Base64.NO_WRAP)
+    private fun decode(value: String): ByteArray = Base64.decode(value, Base64.NO_WRAP)
 
     private companion object {
         const val TOKEN = "token_ciphertext"
         const val TOKEN_IV = "token_iv"
+        const val USER_ID = "user_id_ciphertext"
+        const val USER_ID_IV = "user_id_iv"
     }
 }

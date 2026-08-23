@@ -19,7 +19,7 @@ import kotlinx.coroutines.withContext
 import java.math.BigDecimal
 import java.text.NumberFormat
 
-class PaymentCreateActivity : ComponentActivity() {
+class PaymentCreateActivity : AuthenticatedActivity() {
     private lateinit var binding: ActivityPaymentCreateBinding
     private lateinit var repository: OfflinePaymentRepository
     private var invoices = emptyList<PayableInvoice>()

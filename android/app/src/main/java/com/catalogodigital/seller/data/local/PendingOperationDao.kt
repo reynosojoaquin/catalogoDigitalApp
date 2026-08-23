@@ -19,6 +19,9 @@ interface PendingOperationDao {
     @Query("SELECT * FROM pending_operations WHERE status IN (:statuses) ORDER BY clientTimestamp DESC")
     fun observeIssues(statuses: List<String>): Flow<List<PendingOperation>>
 
+    @Query("SELECT COUNT(*) FROM pending_operations WHERE status IN (:statuses)")
+    suspend fun countByStatuses(statuses: List<String>): Int
+
     @Query("SELECT * FROM pending_operations WHERE status = :status ORDER BY clientTimestamp LIMIT :limit")
     suspend fun findByStatus(status: String, limit: Int): List<PendingOperation>
 

@@ -11,7 +11,7 @@ import com.catalogodigital.seller.sync.SyncIssuePolicy
 import com.catalogodigital.seller.sync.SyncIssueReason
 import kotlinx.coroutines.launch
 
-class SyncIssuesActivity : ComponentActivity() {
+class SyncIssuesActivity : AuthenticatedActivity() {
     private lateinit var binding: ActivitySyncIssuesBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {

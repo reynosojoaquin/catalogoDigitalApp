@@ -31,6 +31,8 @@
     <string name="login_action">Entrar</string>
     <string name="login_failed">No fue posible iniciar sesión. Verifica tus datos y la conexión.</string>
     <string name="login_required">Inicia sesión para sincronizar.</string>
+    <string name="login_account_switch_blocked">No se puede cambiar de cuenta mientras existan operaciones pendientes, rechazadas o en conflicto.</string>
+    <string name="logout_action">Cerrar sesión</string>
     <string name="customer_create_title">Nuevo cliente</string>
     <string name="customer_full_name">Nombre completo</string>
     <string name="customer_email">Correo electrónico</string>

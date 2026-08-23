@@ -5,12 +5,15 @@ import com.catalogodigital.seller.network.SecureEndpointPolicy
 import java.net.HttpURLConnection
 import java.net.URI
 
+data class AuthSession(val token: String, val userId: String)
+
 class AuthApiClient(private val baseUrl: String) {
-    fun authenticate(username: String, password: CharArray): String {
+    fun authenticate(username: String, password: CharArray): AuthSession {
         val body = JSONObject()
             .put("username", username)
             .put("password", password.concatToString())
-        return request("/api/auth/token/", body, null).getString("token")
+        val response = request("/api/auth/token/", body, null)
+        return AuthSession(response.getString("token"), response.getString("user_id"))
     }
 
     fun registerDevice(token: String, deviceId: String, appVersion: String) {
