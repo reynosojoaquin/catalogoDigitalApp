@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ page_title }} · Catálogo Digital</title>
-  <link rel="stylesheet" href="{% static 'dashboard/dashboard.css' %}">
+  <link rel="stylesheet" href="{% static 'dashboard/dashboard.css' %}"><link rel="stylesheet" href="{% static 'dashboard/language.css' %}">
 </head>
 <body>
   <aside class="sidebar">
@@ -34,7 +34,7 @@
     </div>
   </aside>
   <div class="page">
-    <header class="topbar"><div><span class="breadcrumb">{% translate "Workspace" %} / </span><strong>{% translate "Overview" %}</strong></div><div class="topbar-status"><span class="status-dot"></span>{% translate "System operational" %}</div></header>
+    <header class="topbar"><div><span class="breadcrumb">{% translate "Workspace" %} / </span><strong>{% translate "Overview" %}</strong></div><div class="topbar-tools"><form class="language-form" action="{% url 'set_language' %}" method="post">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button type="submit" name="language" value="{% if LANGUAGE_CODE == 'es-do' %}en{% else %}es-do{% endif %}" aria-label="{% translate 'Change language' %}">{% if LANGUAGE_CODE == 'es-do' %}EN{% else %}ES{% endif %}</button></form><div class="topbar-status"><span class="status-dot"></span>{% translate "System operational" %}</div></div></header>
     <main class="shell">
       <div class="heading"><div><p class="eyebrow">{% translate "Operations overview" %}</p><h1>{% translate "Good morning" %}, {{ request.user.get_username }}</h1><p class="subtitle">{% translate "Monitor your commercial operation from one place." %}</p></div><a class="admin-link" href="{% url 'admin:index' %}">{% translate "Open administration" %} <span aria-hidden="true">↗</span></a></div>
       <section class="metrics" aria-label="{% translate 'Operational metrics' %}">{% for metric in metrics %}<a class="metric" href="{{ metric.url }}"><span class="metric-label">{{ metric.label }}</span><strong>{{ metric.value }}</strong><span class="metric-link">{% translate "View details" %} <span aria-hidden="true">→</span></span></a>{% endfor %}</section>

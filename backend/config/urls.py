@@ -5,6 +5,7 @@ from .views import health
 from .web_views import dashboard, resource_action, resource_detail, resource_list
 
 urlpatterns = [
+    path("i18n/", include("django.conf.urls.i18n")),
     path("dashboard/", dashboard, name="dashboard"),
     path("app/<slug:resource>/", resource_list, name="resource_list"),
     path("app/<slug:resource>/<uuid:pk>/", resource_detail, name="resource_detail"),
