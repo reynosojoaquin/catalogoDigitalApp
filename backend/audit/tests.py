@@ -3,6 +3,8 @@ import uuid
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
+from accounts.models import UserProfile
+
 from .models import AuditEvent
 
 
@@ -67,3 +69,16 @@ class AdminMutationAuditTests(TestCase):
         self.assertEqual(event.result, AuditEvent.Result.DENIED)
         self.assertEqual(event.metadata["path"], "/admin/login/")
         self.assertNotIn("password", event.metadata)
+
+    def test_staff_seller_cannot_access_admin_models(self):
+        seller = get_user_model().objects.create_user(
+            username="staff-seller",
+            password="StrongPassword123!",
+            is_staff=True,
+        )
+        UserProfile.objects.create(user=seller, role=UserProfile.Role.SELLER)
+        self.client.force_login(seller)
+
+        response = self.client.get("/admin/catalog/product/")
+
+        self.assertEqual(response.status_code, 403)

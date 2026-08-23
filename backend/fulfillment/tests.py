@@ -230,5 +230,5 @@ class FulfillmentApiTests(APITestCase):
             follow=True,
         )
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 403)
         self.assertFalse(Delivery.objects.exists())

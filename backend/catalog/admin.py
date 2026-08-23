@@ -1,10 +1,11 @@
 from django.contrib import admin
 
+from audit.admin_actions import AdminRoleRequiredMixin
 from .models import Customer, Product
 
 
 @admin.register(Customer)
-class CustomerAdmin(admin.ModelAdmin):
+class CustomerAdmin(AdminRoleRequiredMixin, admin.ModelAdmin):
     list_display = ("full_name", "email", "phone", "is_active", "created_by", "updated_at")
     list_filter = ("is_active",)
     search_fields = ("full_name", "email", "phone")
@@ -13,7 +14,7 @@ class CustomerAdmin(admin.ModelAdmin):
 
 
 @admin.register(Product)
-class ProductAdmin(admin.ModelAdmin):
+class ProductAdmin(AdminRoleRequiredMixin, admin.ModelAdmin):
     list_display = ("sku", "name", "price", "commission_amount", "is_active", "updated_at")
     list_filter = ("is_active",)
     search_fields = ("sku", "name")

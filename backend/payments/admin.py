@@ -3,12 +3,12 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 import uuid
 
-from audit.admin_actions import DomainActionAdminMixin
+from audit.admin_actions import AdminRoleRequiredMixin, DomainActionAdminMixin
 from .services import PaymentIdempotencyConflictError, PaymentNotConfirmableError, confirm_payment
 from .models import CommissionMovement, PaymentConfirmation, PaymentReport
 
 
-class ReadOnlyFinancialAdmin(admin.ModelAdmin):
+class ReadOnlyFinancialAdmin(AdminRoleRequiredMixin, admin.ModelAdmin):
     def has_add_permission(self, request):
         return False
 

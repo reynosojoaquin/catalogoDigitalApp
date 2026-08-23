@@ -3,7 +3,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 import uuid
 
-from audit.admin_actions import DomainActionAdminMixin
+from audit.admin_actions import AdminRoleRequiredMixin, DomainActionAdminMixin
 from settlements.services import SettlementConflictError, confirm_settlement
 from .models import Device, UserProfile
 
@@ -48,7 +48,7 @@ class UserProfileAdmin(DomainActionAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(Device)
-class DeviceAdmin(admin.ModelAdmin):
+class DeviceAdmin(AdminRoleRequiredMixin, admin.ModelAdmin):
     list_display = ("id", "user", "platform", "app_version", "is_active", "last_seen_at")
     list_filter = ("platform", "is_active")
     search_fields = ("id", "user__username")

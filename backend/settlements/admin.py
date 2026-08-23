@@ -1,5 +1,6 @@
 from django.contrib import admin
 
+from audit.admin_actions import AdminRoleRequiredMixin
 from .models import CommissionSettlement, CommissionSettlementItem
 
 
@@ -11,7 +12,7 @@ class SettlementItemInline(admin.TabularInline):
 
 
 @admin.register(CommissionSettlement)
-class CommissionSettlementAdmin(admin.ModelAdmin):
+class CommissionSettlementAdmin(AdminRoleRequiredMixin, admin.ModelAdmin):
     list_display = ("id", "seller", "total", "period_ends_at", "confirmed_by", "confirmed_at")
     search_fields = ("id", "seller__username")
     readonly_fields = [field.name for field in CommissionSettlement._meta.fields]

@@ -1,5 +1,6 @@
 from django.contrib import admin
 
+from audit.admin_actions import AdminRoleRequiredMixin
 from .models import Delivery, Invoice, InvoiceItem
 
 
@@ -11,7 +12,7 @@ class InvoiceItemInline(admin.TabularInline):
 
 
 @admin.register(Delivery)
-class DeliveryAdmin(admin.ModelAdmin):
+class DeliveryAdmin(AdminRoleRequiredMixin, admin.ModelAdmin):
     list_display = ("id", "order", "confirmed_by", "delivered_at", "created_at")
     readonly_fields = [field.name for field in Delivery._meta.fields]
 
@@ -26,7 +27,7 @@ class DeliveryAdmin(admin.ModelAdmin):
 
 
 @admin.register(Invoice)
-class InvoiceAdmin(admin.ModelAdmin):
+class InvoiceAdmin(AdminRoleRequiredMixin, admin.ModelAdmin):
     list_display = ("id", "order", "seller", "customer_name", "status", "total", "issued_at")
     list_filter = ("status",)
     search_fields = ("id", "order__id", "seller__username", "customer_name")
