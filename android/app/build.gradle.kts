@@ -21,10 +21,12 @@ fun configurationValue(name: String): String =
         ?: localProperties.getProperty(name)
         ?: ""
 
-val releaseKeystorePath = configurationValue("ANDROID_KEYSTORE_PATH")
-val releaseKeystorePassword = configurationValue("ANDROID_KEYSTORE_PASSWORD")
-val releaseKeyAlias = configurationValue("ANDROID_KEY_ALIAS")
-val releaseKeyPassword = configurationValue("ANDROID_KEY_PASSWORD")
+fun environmentValue(name: String): String = providers.environmentVariable(name).orNull.orEmpty()
+
+val releaseKeystorePath = environmentValue("ANDROID_KEYSTORE_PATH")
+val releaseKeystorePassword = environmentValue("ANDROID_KEYSTORE_PASSWORD")
+val releaseKeyAlias = environmentValue("ANDROID_KEY_ALIAS")
+val releaseKeyPassword = environmentValue("ANDROID_KEY_PASSWORD")
 val releaseVersionCode = configurationValue("ANDROID_VERSION_CODE").toIntOrNull() ?: 1
 val releaseVersionName = configurationValue("ANDROID_VERSION_NAME").ifBlank { "0.1.0" }
 
