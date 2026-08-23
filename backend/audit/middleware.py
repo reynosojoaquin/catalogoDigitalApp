@@ -1,5 +1,9 @@
 import uuid
 
+from django.http import HttpResponseForbidden
+
+from accounts.models import UserProfile
+
 from .models import AuditEvent
 
 
@@ -17,6 +21,20 @@ class AuditContextMiddleware:
         response = self.get_response(request)
         response["X-Correlation-ID"] = correlation_id
         return response
+
+
+class AdminRoleMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if request.path.startswith("/admin/") and request.user.is_authenticated:
+            profile = getattr(request.user, "profile", None)
+            if not request.user.is_superuser and (
+                not request.user.is_staff or profile is None or profile.role != UserProfile.Role.ADMIN
+            ):
+                return HttpResponseForbidden("Administrator access required.")
+        return self.get_response(request)
 
 
 class AdminMutationAuditMiddleware:

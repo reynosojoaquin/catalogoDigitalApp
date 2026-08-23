@@ -82,3 +82,7 @@ class AdminMutationAuditTests(TestCase):
         response = self.client.get("/admin/catalog/product/")
 
         self.assertEqual(response.status_code, 403)
+
+        response = self.client.get("/admin/auth/user/")
+
+        self.assertEqual(response.status_code, 403)
