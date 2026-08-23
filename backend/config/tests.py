@@ -43,6 +43,7 @@ class DashboardTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Administration dashboard")
+        self.assertContains(response, 'href="/app/catalog/"')
 
     def test_dashboard_denies_sellers(self):
         user = get_user_model().objects.create_user(username="dashboard-seller", password="A-secure-password-123")

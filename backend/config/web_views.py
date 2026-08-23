@@ -38,12 +38,12 @@ def dashboard(request):
     context = {
         "page_title": _("Administration dashboard"),
         "metrics": [
-            {"label": _("Active products"), "value": Product.objects.filter(is_active=True).count(), "url": "/admin/catalog/product/"},
-            {"label": _("Active customers"), "value": Customer.objects.filter(is_active=True).count(), "url": "/admin/catalog/customer/"},
-            {"label": _("Submitted orders"), "value": Order.objects.filter(status=Order.Status.SUBMITTED).count(), "url": "/admin/sales/order/?status=submitted"},
-            {"label": _("Unpaid invoices"), "value": Invoice.objects.filter(status=Invoice.Status.UNPAID).count(), "url": "/admin/fulfillment/invoice/?status=unpaid"},
-            {"label": _("Reported payments"), "value": PaymentReport.objects.filter(status=PaymentReport.Status.REPORTED).count(), "url": "/admin/payments/paymentreport/?status=reported"},
-            {"label": _("Reported returns"), "value": ReturnReport.objects.filter(status=ReturnReport.Status.REPORTED).count(), "url": "/admin/returns/returnreport/?status=reported"},
+            {"label": _("Active products"), "value": Product.objects.filter(is_active=True).count(), "url": "/app/catalog/"},
+            {"label": _("Active customers"), "value": Customer.objects.filter(is_active=True).count(), "url": "/app/customers/"},
+            {"label": _("Submitted orders"), "value": Order.objects.filter(status=Order.Status.SUBMITTED).count(), "url": "/app/orders/?status=submitted"},
+            {"label": _("Unpaid invoices"), "value": Invoice.objects.filter(status=Invoice.Status.UNPAID).count(), "url": "/app/invoices/?status=unpaid"},
+            {"label": _("Reported payments"), "value": PaymentReport.objects.filter(status=PaymentReport.Status.REPORTED).count(), "url": "/app/payments/?status=reported"},
+            {"label": _("Reported returns"), "value": ReturnReport.objects.filter(status=ReturnReport.Status.REPORTED).count(), "url": "/app/returns/?status=reported"},
         ],
         "available_commissions": CommissionMovement.objects.filter(
             status=CommissionMovement.Status.AVAILABLE,
