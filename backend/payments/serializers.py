@@ -1,3 +1,5 @@
+import re
+
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
@@ -5,7 +7,10 @@ from .models import CommissionMovement, PaymentConfirmation, PaymentReport
 
 
 def looks_like_card_number(value):
-    digits = "".join(character for character in value if character.isdigit())
+    candidate = value.strip()
+    if not re.fullmatch(r"[0-9][0-9 -]*", candidate):
+        return False
+    digits = "".join(character for character in candidate if character.isdigit())
     return 13 <= len(digits) <= 19
 
 

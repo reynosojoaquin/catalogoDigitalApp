@@ -27,7 +27,11 @@ object PaymentInputPolicy {
     }
 
     fun looksLikeCardNumber(value: String): Boolean {
-        val digits = value.filter(Char::isDigit)
+        val candidate = value.trim()
+        if (candidate.isEmpty() || candidate.firstOrNull()?.isDigit() != true ||
+            candidate.any { !it.isDigit() && it != ' ' && it != '-' }
+        ) return false
+        val digits = candidate.filter(Char::isDigit)
         return digits.length in 13..19
     }
 }
