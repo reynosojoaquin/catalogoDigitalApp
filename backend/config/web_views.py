@@ -183,17 +183,17 @@ def resource_detail(request, resource, pk):
         related = {"title": _("Returned items"), "columns": (_("Product"), _("Quantity"), _("Unit price"), _("Line total")), "rows": [[row.invoice_item.product_name, row.quantity, row.unit_price, row.line_total] for row in item.items.select_related("invoice_item").all()]}
     action = None
     if resource == "orders" and item.status == Order.Status.SUBMITTED:
-        action = {"label": _("Confirm complete delivery"), "key": "delivery"}
+        action = {"label": _("Confirm complete delivery"), "key": "delivery", "confirm": _("Confirm complete delivery? This will issue the internal invoice.")}
     elif resource == "payments" and item.status == PaymentReport.Status.REPORTED:
-        action = {"label": _("Confirm total payment"), "key": "payment"}
+        action = {"label": _("Confirm total payment"), "key": "payment", "confirm": _("Confirm this total payment and credit commissions?")}
     elif resource == "returns" and item.status == ReturnReport.Status.REPORTED:
-        action = {"label": _("Confirm return"), "key": "return"}
+        action = {"label": _("Confirm return"), "key": "return", "confirm": _("Confirm this return and create the compensating commission movements?")}
     elif resource == "commissions" and item.status == CommissionMovement.Status.AVAILABLE:
-        action = {"label": _("Settle available commissions for this seller"), "key": "settlement"}
+        action = {"label": _("Settle available commissions for this seller"), "key": "settlement", "confirm": _("Settle all available commissions for this seller up to now?")}
     elif resource == "devices" and item.is_active:
-        action = {"label": _("Revoke device"), "key": "revoke_device"}
+        action = {"label": _("Revoke device"), "key": "revoke_device", "confirm": _("Revoke this device? It will no longer synchronize.")}
     elif resource == "users" and item != request.user:
-        action = {"label": _("Deactivate user") if item.is_active else _("Activate user"), "key": "toggle_user", "desired_active": not item.is_active}
+        action = {"label": _("Deactivate user") if item.is_active else _("Activate user"), "key": "toggle_user", "desired_active": not item.is_active, "confirm": _("Apply this account status change?")}
     return render(request, "dashboard/resource_detail.html", {
         "page_title": config["title"], "resource": resource, "item": item, "fields": fields,
         "action": action, "action_idempotency_key": uuid.uuid4(), "related": related,
