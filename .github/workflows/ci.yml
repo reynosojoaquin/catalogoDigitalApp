@@ -21,6 +21,8 @@ jobs:
         run: |
           docker compose --env-file .env.test.example -f compose.test.yaml config --quiet
           ENV_FILE=.env.production.example docker compose --env-file .env.production.example -f compose.production.yaml config --quiet
+      - name: Check committed migrations
+        run: docker compose --env-file .env.test.example -f compose.test.yaml run --rm --no-deps backend python manage.py makemigrations --check --dry-run
       - name: Run backend tests with PostgreSQL and Redis
         run: docker compose --env-file .env.test.example -f compose.test.yaml up --build --abort-on-container-exit --exit-code-from backend
       - name: Stop test services
