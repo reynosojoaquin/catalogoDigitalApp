@@ -156,30 +156,27 @@ def sync_order_create(
             items=items, correlation_id=correlation_id,
         )
     except InvalidOrderReferenceError:
-        receipt = SyncOperationReceipt.objects.create(
-            operation_id=operation_id, seller=actor, device=device, entity_type="order",
+        return create_receipt(
+            actor=actor, device=device, operation_id=operation_id, entity_type="order",
             idempotency_key=idempotency_key, request_hash=request_hash,
             client_timestamp=client_timestamp, client_version=client_version,
             status=SyncOperationReceipt.Status.CONFLICT, entity_id=order_id,
             conflict_code="invalid_order_reference",
         )
-        return receipt, True
     except IdempotencyConflictError:
-        receipt = SyncOperationReceipt.objects.create(
-            operation_id=operation_id, seller=actor, device=device, entity_type="order",
+        return create_receipt(
+            actor=actor, device=device, operation_id=operation_id, entity_type="order",
             idempotency_key=idempotency_key, request_hash=request_hash,
             client_timestamp=client_timestamp, client_version=client_version,
             status=SyncOperationReceipt.Status.CONFLICT, entity_id=order_id,
             conflict_code="order_idempotency_conflict",
         )
-        return receipt, True
-    receipt = SyncOperationReceipt.objects.create(
-        operation_id=operation_id, seller=actor, device=device, entity_type="order",
+    return create_receipt(
+        actor=actor, device=device, operation_id=operation_id, entity_type="order",
         idempotency_key=idempotency_key, request_hash=request_hash,
         client_timestamp=client_timestamp, client_version=client_version,
         status=SyncOperationReceipt.Status.APPLIED, entity_id=result.order.id,
     )
-    return receipt, True
 
 
 @transaction.atomic
@@ -217,13 +214,12 @@ def sync_payment_create(
         status_value = SyncOperationReceipt.Status.CONFLICT
         conflict_code = "payment_idempotency_conflict"
         entity_id = report_id
-    receipt = SyncOperationReceipt.objects.create(
-        operation_id=operation_id, seller=actor, device=device, entity_type="payment",
+    return create_receipt(
+        actor=actor, device=device, operation_id=operation_id, entity_type="payment",
         idempotency_key=idempotency_key, request_hash=request_hash,
         client_timestamp=client_timestamp, client_version=client_version,
         status=status_value, entity_id=entity_id, conflict_code=conflict_code,
     )
-    return receipt, True
 
 
 @transaction.atomic
@@ -256,13 +252,12 @@ def sync_return_create(
         status_value = SyncOperationReceipt.Status.CONFLICT
         conflict_code = "return_conflict"
         entity_id = report_id
-    receipt = SyncOperationReceipt.objects.create(
-        operation_id=operation_id, seller=actor, device=device, entity_type="return",
+    return create_receipt(
+        actor=actor, device=device, operation_id=operation_id, entity_type="return",
         idempotency_key=idempotency_key, request_hash=request_hash,
         client_timestamp=client_timestamp, client_version=client_version,
         status=status_value, entity_id=entity_id, conflict_code=conflict_code,
     )
-    return receipt, True
 
 
 @transaction.atomic
@@ -281,14 +276,13 @@ def record_rejected_operation(
     )
     if replay:
         return replay, False
-    receipt = SyncOperationReceipt.objects.create(
-        operation_id=operation_id, seller=actor, device=device,
+    return create_receipt(
+        actor=actor, device=device, operation_id=operation_id,
         entity_type=operation_type.removesuffix("_create"),
         idempotency_key=idempotency_key, request_hash=request_hash,
         client_timestamp=client_timestamp, client_version=client_version,
         status=SyncOperationReceipt.Status.REJECTED, conflict_code=conflict_code,
     )
-    return receipt, True
 
 
 def serialize_change(change):
