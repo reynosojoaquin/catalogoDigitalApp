@@ -192,6 +192,8 @@ def resource_detail(request, resource, pk):
         action = {"label": _("Settle available commissions for this seller"), "key": "settlement"}
     elif resource == "devices" and item.is_active:
         action = {"label": _("Revoke device"), "key": "revoke_device"}
+    elif resource == "users" and item != request.user:
+        action = {"label": _("Deactivate user") if item.is_active else _("Activate user"), "key": "toggle_user", "desired_active": not item.is_active}
     return render(request, "dashboard/resource_detail.html", {
         "page_title": config["title"], "resource": resource, "item": item, "fields": fields,
         "action": action, "action_idempotency_key": uuid.uuid4(), "related": related,
@@ -225,6 +227,14 @@ def resource_action(request, resource, pk):
             device.is_active = False
             device.save(update_fields=["is_active", "last_seen_at"])
             AuditEvent.objects.create(actor=request.user, action="device.revoked", resource_type="device", resource_id=str(device.id), result=AuditEvent.Result.SUCCESS, source="web", correlation_id=request.correlation_id)
+        elif resource == "users":
+            user = get_object_or_404(get_user_model(), pk=pk)
+            if user == request.user:
+                raise PermissionDenied
+            desired_active = request.POST.get("desired_active") == "1"
+            user.is_active = desired_active
+            user.save(update_fields=["is_active"])
+            AuditEvent.objects.create(actor=request.user, action="user.activated" if user.is_active else "user.deactivated", resource_type="user", resource_id=str(user.id), result=AuditEvent.Result.SUCCESS, source="web", correlation_id=request.correlation_id)
         else:
             raise PermissionDenied
     except (DeliveryIdempotencyConflictError, OrderNotDeliverableError, PaymentIdempotencyConflictError, PaymentNotConfirmableError, ReturnConflictError, SettlementConflictError) as error:
