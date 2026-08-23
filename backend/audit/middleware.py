@@ -38,6 +38,38 @@ class AdminRoleMiddleware:
         return self.get_response(request)
 
 
+class ApiFailureAuditMiddleware:
+    mutation_methods = {"POST", "PUT", "PATCH", "DELETE"}
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        if (
+            request.path.startswith("/api/")
+            and request.path != "/api/auth/token/"
+            and request.method in self.mutation_methods
+            and response.status_code >= 400
+        ):
+            actor = request.user if request.user.is_authenticated else None
+            AuditEvent.objects.create(
+                actor=actor,
+                action="api.operation_denied",
+                resource_type="api",
+                result=AuditEvent.Result.DENIED,
+                source="api",
+                correlation_id=request.correlation_id,
+                ip_address=request.META.get("REMOTE_ADDR"),
+                metadata={
+                    "method": request.method,
+                    "path": request.path,
+                    "status_code": response.status_code,
+                },
+            )
+        return response
+
+
 class AdminMutationAuditMiddleware:
     mutation_methods = {"POST", "PUT", "PATCH", "DELETE"}
 

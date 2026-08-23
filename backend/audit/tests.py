@@ -70,6 +70,21 @@ class AdminMutationAuditTests(TestCase):
         self.assertEqual(event.metadata["path"], "/admin/login/")
         self.assertNotIn("password", event.metadata)
 
+    def test_failed_api_mutation_is_audited_without_payload(self):
+        self.client.logout()
+
+        response = self.client.post(
+            "/api/customers/",
+            {"full_name": "not-stored"},
+            format="json",
+        )
+
+        self.assertIn(response.status_code, (401, 403))
+        event = AuditEvent.objects.get(action="api.operation_denied")
+        self.assertIsNone(event.actor)
+        self.assertEqual(event.metadata["path"], "/api/customers/")
+        self.assertNotIn("full_name", event.metadata)
+
     def test_staff_seller_cannot_access_admin_models(self):
         seller = get_user_model().objects.create_user(
             username="staff-seller",
