@@ -4,7 +4,7 @@ from django.test import TestCase
 
 
 class HealthEndpointTests(TestCase):
-    def test_health_endpoint_is_public_and_checks_database(self):
+    def test_health_endpoint_is_public_and_checks_database_and_cache(self):
         response = self.client.get("/health/")
 
         self.assertEqual(response.status_code, 200)
