@@ -279,6 +279,22 @@ class OfflineSyncApiTests(APITestCase):
         self.assertEqual(receipt.conflict_code, "invalid_payload")
         self.assertFalse(hasattr(receipt, "payload"))
 
+    def test_batch_rejects_non_object_payload_without_server_error(self):
+        operation = {
+            "operation_id": str(uuid.uuid4()), "operation_type": "payment_create",
+            "idempotency_key": str(uuid.uuid4()), "client_timestamp": timezone.now().isoformat(),
+            "client_version": 1, "payload": ["malformed-offline-payload"],
+        }
+
+        response = self.client.post(
+            self.batch_url, {"device_id": str(self.device.id), "operations": [operation]}, format="json"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["counts"]["rejected"], 1)
+        receipt = SyncOperationReceipt.objects.get(operation_id=operation["operation_id"])
+        self.assertEqual(receipt.conflict_code, "invalid_payload")
+
     def test_batch_applies_total_cash_payment_report(self):
         invoice, _item = self.create_invoice()
         report_id = uuid.uuid4()

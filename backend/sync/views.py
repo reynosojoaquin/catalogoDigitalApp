@@ -175,6 +175,15 @@ class SyncBatchView(generics.GenericAPIView):
             "return_create": ReturnReportCreateSerializer,
         }
         payload = operation["payload"]
+        if not isinstance(payload, dict):
+            try:
+                receipt, _created = record_rejected_operation(
+                    actor=request.user, device=device, conflict_code="invalid_payload",
+                    **operation,
+                )
+                return SyncReceiptSerializer(receipt).data
+            except SyncIdempotencyConflictError:
+                return self.idempotency_conflict_result(operation)
         if operation["operation_type"] in ("payment_create", "return_create"):
             payload = {**payload, "device_id": str(device.id)}
         payload_serializer = payload_serializer_classes[operation["operation_type"]](data=payload)
