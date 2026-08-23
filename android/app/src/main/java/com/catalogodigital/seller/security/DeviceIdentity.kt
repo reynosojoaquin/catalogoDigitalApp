@@ -7,7 +7,7 @@ class DeviceIdentity(context: Context) {
     private val preferences = context.getSharedPreferences("device_identity", Context.MODE_PRIVATE)
 
     fun id(): UUID {
-        preferences.getString(DEVICE_ID, null)?.let { return UUID.fromString(it) }
+        DeviceIdentityPolicy.parseStored(preferences.getString(DEVICE_ID, null))?.let { return it }
         return rotate()
     }
 
