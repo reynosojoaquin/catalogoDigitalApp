@@ -2,6 +2,7 @@ package com.catalogodigital.seller.sync
 
 import android.content.Context
 import androidx.work.Constraints
+import androidx.work.ExistingWorkPolicy
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
@@ -11,6 +12,7 @@ import java.util.concurrent.TimeUnit
 
 object SyncScheduler {
     private const val PERIODIC_WORK = "catalog-periodic-sync"
+    private const val ON_DEMAND_WORK = "catalog-on-demand-sync"
 
     private val constraints = Constraints.Builder()
         .setRequiredNetworkType(NetworkType.CONNECTED)
@@ -28,7 +30,9 @@ object SyncScheduler {
     }
 
     fun runNow(context: Context) {
-        WorkManager.getInstance(context).enqueue(
+        WorkManager.getInstance(context).enqueueUniqueWork(
+            ON_DEMAND_WORK,
+            ExistingWorkPolicy.KEEP,
             OneTimeWorkRequestBuilder<SyncWorker>().setConstraints(constraints).build(),
         )
     }
