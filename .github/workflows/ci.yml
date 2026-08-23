@@ -17,6 +17,13 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Scan tracked files for secrets
+        shell: bash
+        run: |
+          if git grep -n -I -E 'BEGIN (RSA|OPENSSH|EC|DSA) PRIVATE KEY|ghp_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9]{20,}' -- . ':(exclude)*.example'; then
+            echo "Potential secret detected in tracked files."
+            exit 1
+          fi
       - name: Validate Compose files
         run: |
           docker compose --env-file .env.test.example -f compose.test.yaml config --quiet
