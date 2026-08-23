@@ -96,6 +96,16 @@ RESOURCE_CONFIG = {
         "search": ("action", "resource_type", "resource_id", "actor__username"),
         "columns": (("occurred_at", _("Date")), ("action", _("Action")), ("actor__username", _("Actor")), ("resource_type", _("Resource")), ("result", _("Result"))),
     },
+    "sellers": {
+        "title": _("Sellers"), "model": UserProfile,
+        "search": ("user__username",),
+        "columns": (("user__username", _("Username")), ("role", _("Role")), ("user__is_active", _("Status")), ("created_at", _("Created"))),
+    },
+    "devices": {
+        "title": _("Devices"), "model": Device,
+        "search": ("id", "user__username", "app_version"),
+        "columns": (("id", _("Device")), ("user__username", _("Seller")), ("platform", _("Platform")), ("app_version", _("App version")), ("is_active", _("Status")), ("last_seen_at", _("Last seen"))),
+    },
 }
 
 
@@ -167,6 +177,8 @@ def resource_detail(request, resource, pk):
         action = {"label": _("Confirm return"), "key": "return"}
     elif resource == "commissions" and item.status == CommissionMovement.Status.AVAILABLE:
         action = {"label": _("Settle available commissions for this seller"), "key": "settlement"}
+    elif resource == "devices" and item.is_active:
+        action = {"label": _("Revoke device"), "key": "revoke_device"}
     return render(request, "dashboard/resource_detail.html", {
         "page_title": config["title"], "resource": resource, "item": item, "fields": fields,
         "action": action, "action_idempotency_key": uuid.uuid4(),
@@ -193,6 +205,13 @@ def resource_action(request, resource, pk):
         elif resource == "commissions":
             movement = get_object_or_404(CommissionMovement, pk=pk)
             confirm_settlement(actor=request.user, settlement_id=uuid.uuid4(), seller_id=movement.seller_id, period_ends_at=now, confirmed_at=now, idempotency_key=idempotency_key, correlation_id=request.correlation_id)
+        elif resource == "devices":
+            device = get_object_or_404(Device, pk=pk)
+            if not device.is_active:
+                raise PermissionDenied
+            device.is_active = False
+            device.save(update_fields=["is_active", "last_seen_at"])
+            AuditEvent.objects.create(actor=request.user, action="device.revoked", resource_type="device", resource_id=str(device.id), result=AuditEvent.Result.SUCCESS, source="web", correlation_id=request.correlation_id)
         else:
             raise PermissionDenied
     except (DeliveryIdempotencyConflictError, OrderNotDeliverableError, PaymentIdempotencyConflictError, PaymentNotConfirmableError, ReturnConflictError, SettlementConflictError) as error:

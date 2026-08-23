@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 
 from accounts.models import UserProfile
+from accounts.models import Device
 from catalog.models import Product
 
 
@@ -80,3 +81,15 @@ class DashboardTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Detailed product")
+
+    def test_devices_view_renders_without_sensitive_session_data(self):
+        user = get_user_model().objects.create_superuser(username="device-admin", password="A-secure-password-123")
+        seller = get_user_model().objects.create_user(username="seller-one", password="A-secure-password-123")
+        device = Device.objects.create(user=seller, platform=Device.Platform.ANDROID, app_version="1.0.0")
+        self.client.force_login(user)
+
+        response = self.client.get("/app/devices/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, str(device.id))
+        self.assertNotContains(response, "A-secure-password-123")

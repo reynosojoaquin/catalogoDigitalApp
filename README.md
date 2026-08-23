@@ -61,7 +61,7 @@ Caddy termina TLS automáticamente. El backend no se expone directamente, sirve 
 
 ## Administración web
 
-El dashboard operativo está disponible en `/dashboard/` para usuarios administradores autenticados. Muestra los pendientes de productos, clientes, pedidos, facturas, pagos y devoluciones, además del resumen de comisiones, dispositivos activos y actividad de auditoría. Las vistas propias `/app/catalog/`, `/app/customers/`, `/app/orders/`, `/app/invoices/`, `/app/payments/`, `/app/returns/`, `/app/commissions/` y `/app/audit/` ofrecen tablas con búsqueda, filtros de estado y paginación sobre la base de datos real. No se cargan datos de ejemplo.
+El dashboard operativo está disponible en `/dashboard/` para usuarios administradores autenticados. Muestra los pendientes de productos, clientes, pedidos, facturas, pagos y devoluciones, además del resumen de comisiones, dispositivos activos y actividad de auditoría. Las vistas propias `/app/catalog/`, `/app/customers/`, `/app/orders/`, `/app/invoices/`, `/app/payments/`, `/app/returns/`, `/app/commissions/`, `/app/audit/`, `/app/sellers/` y `/app/devices/` ofrecen tablas con búsqueda, filtros de estado y paginación sobre la base de datos real. Los dispositivos pueden revocarse desde su detalle y la acción queda auditada. No se cargan datos de ejemplo.
 
 El panel `/admin/` permite consultar documentos históricos sin editarlos. Los flujos operativos se ejecutan mediante acciones sobre los registros seleccionados:
 
