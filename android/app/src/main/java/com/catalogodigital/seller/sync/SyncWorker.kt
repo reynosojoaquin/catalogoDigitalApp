@@ -27,11 +27,13 @@ class SyncWorker(context: Context, parameters: WorkerParameters) : CoroutineWork
         }
 
         val operations = dao.claim(SyncBatchPolicy.MAX_OPERATIONS, System.currentTimeMillis())
+        var operationsReconciled = operations.isEmpty()
         try {
             if (operations.isNotEmpty()) {
                 val queue = OperationQueue(dao)
                 val results = SyncApiClient(BuildConfig.API_BASE_URL, token).push(operations, queue)
                 SyncReconciliationRepository(database).apply(operations, results)
+                operationsReconciled = true
             }
 
             val repository = CatalogFeedRepository(database)
@@ -68,18 +70,24 @@ class SyncWorker(context: Context, parameters: WorkerParameters) : CoroutineWork
                 else SyncFailureAction.RETRY
             ) {
                 SyncFailureAction.AUTHENTICATION_REQUIRED -> {
-                    operations.forEach { dao.updateResult(it.operationId, OperationStatus.PENDING, null) }
+                    if (SyncBatchRecoveryPolicy.shouldResetClaimedOperations(operationsReconciled)) {
+                        operations.forEach { dao.updateResult(it.operationId, OperationStatus.PENDING, null) }
+                    }
                     SessionStore(applicationContext).clearToken()
                     Result.failure()
                 }
                 SyncFailureAction.REJECT_BATCH -> {
-                    operations.forEach {
-                        dao.updateResult(it.operationId, OperationStatus.REJECTED, "batch_rejected")
+                    if (SyncBatchRecoveryPolicy.shouldResetClaimedOperations(operationsReconciled)) {
+                        operations.forEach {
+                            dao.updateResult(it.operationId, OperationStatus.REJECTED, "batch_rejected")
+                        }
                     }
                     Result.failure()
                 }
                 SyncFailureAction.RETRY -> {
-                    operations.forEach { dao.updateResult(it.operationId, OperationStatus.PENDING, null) }
+                    if (SyncBatchRecoveryPolicy.shouldResetClaimedOperations(operationsReconciled)) {
+                        operations.forEach { dao.updateResult(it.operationId, OperationStatus.PENDING, null) }
+                    }
                     Result.retry()
                 }
             }

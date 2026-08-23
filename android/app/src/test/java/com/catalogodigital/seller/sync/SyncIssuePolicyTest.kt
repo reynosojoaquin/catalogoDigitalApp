@@ -1,6 +1,8 @@
 package com.catalogodigital.seller.sync
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class SyncIssuePolicyTest {
@@ -35,5 +37,11 @@ class SyncIssuePolicyTest {
         assertEquals(SyncFailureAction.RETRY, SyncFailurePolicy.action(408))
         assertEquals(SyncFailureAction.RETRY, SyncFailurePolicy.action(429))
         assertEquals(SyncFailureAction.RETRY, SyncFailurePolicy.action(503))
+    }
+
+    @Test
+    fun reconciledBatchIsNotResetWhenAFeedFailsAfterPush() {
+        assertTrue(SyncBatchRecoveryPolicy.shouldResetClaimedOperations(false))
+        assertFalse(SyncBatchRecoveryPolicy.shouldResetClaimedOperations(true))
     }
 }

@@ -34,3 +34,7 @@ object SyncFailurePolicy {
         else -> SyncFailureAction.RETRY
     }
 }
+
+object SyncBatchRecoveryPolicy {
+    fun shouldResetClaimedOperations(reconciled: Boolean): Boolean = !reconciled
+}
