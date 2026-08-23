@@ -419,3 +419,12 @@ class OfflineSyncApiTests(APITestCase):
 
         self.assertEqual(catalog_response.status_code, 403)
         self.assertEqual(business_response.status_code, 403)
+
+    def test_malformed_feed_device_id_is_a_client_error(self):
+        parameters = {"device_id": "not-a-uuid"}
+
+        catalog_response = self.client.get(self.changes_url, parameters)
+        business_response = self.client.get(self.business_changes_url, parameters)
+
+        self.assertEqual(catalog_response.status_code, 400)
+        self.assertEqual(business_response.status_code, 400)

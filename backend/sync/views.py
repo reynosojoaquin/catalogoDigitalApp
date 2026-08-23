@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils.translation import gettext_lazy as _
 from rest_framework import generics, status
 from rest_framework.exceptions import APIException, PermissionDenied, ValidationError
@@ -33,7 +34,7 @@ def require_active_feed_device(request):
         raise ValidationError({"device_id": _("A device identifier is required.")})
     try:
         device = Device.objects.filter(pk=device_id, user=request.user, is_active=True).first()
-    except (ValueError, TypeError) as error:
+    except (DjangoValidationError, ValueError, TypeError) as error:
         raise ValidationError({"device_id": _("A valid device identifier is required.")}) from error
     if not device:
         raise PermissionDenied(_("An active device owned by the seller is required."))
