@@ -8,9 +8,11 @@ class DeviceIdentity(context: Context) {
 
     fun id(): UUID {
         preferences.getString(DEVICE_ID, null)?.let { return UUID.fromString(it) }
-        return UUID.randomUUID().also {
-            preferences.edit().putString(DEVICE_ID, it.toString()).apply()
-        }
+        return rotate()
+    }
+
+    fun rotate(): UUID = UUID.randomUUID().also {
+        preferences.edit().putString(DEVICE_ID, it.toString()).apply()
     }
 
     private companion object {

@@ -41,11 +41,6 @@ class LoginActivity : ComponentActivity() {
                 withContext(Dispatchers.IO) {
                     val client = AuthApiClient(BuildConfig.API_BASE_URL)
                     val session = client.authenticate(username, password)
-                    client.registerDevice(
-                        session.token,
-                        DeviceIdentity(this@LoginActivity).id().toString(),
-                        BuildConfig.VERSION_NAME,
-                    )
                     val store = SessionStore(this@LoginActivity)
                     val database = (application as CatalogApplication).database
                     val unresolved = database.pendingOperationDao().countByStatuses(
@@ -56,11 +51,20 @@ class LoginActivity : ComponentActivity() {
                             OperationStatus.REJECTED,
                         ),
                     )
+                    val deviceIdentity = DeviceIdentity(this@LoginActivity)
                     when (SessionSwitchPolicy.action(store.userId(), session.userId, unresolved)) {
                         SessionSwitchAction.KEEP_DATA -> Unit
-                        SessionSwitchAction.CLEAR_DATA -> database.clearAllTables()
+                        SessionSwitchAction.CLEAR_DATA -> {
+                            database.clearAllTables()
+                            deviceIdentity.rotate()
+                        }
                         SessionSwitchAction.BLOCK -> throw AccountSwitchBlockedException()
                     }
+                    client.registerDevice(
+                        session.token,
+                        deviceIdentity.id().toString(),
+                        BuildConfig.VERSION_NAME,
+                    )
                     store.save(session.token, session.userId)
                 }
                 setResult(Activity.RESULT_OK)
