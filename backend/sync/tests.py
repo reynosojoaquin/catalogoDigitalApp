@@ -7,6 +7,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
 
 from accounts.models import Device, UserProfile
+from audit.models import AuditEvent
 from catalog.models import Customer, Product
 from sales.models import Order, OrderItem
 from fulfillment.models import Delivery, Invoice, InvoiceItem
@@ -120,6 +121,11 @@ class OfflineSyncApiTests(APITestCase):
 
         self.assertEqual(response.status_code, 409)
         self.assertEqual(Customer.objects.count(), 1)
+        event = AuditEvent.objects.get(action="sync.operation_denied")
+        self.assertEqual(event.result, AuditEvent.Result.DENIED)
+        self.assertEqual(event.resource_type, "customer")
+        self.assertEqual(event.metadata["conflict_code"], "idempotency_mismatch")
+        self.assertNotIn("email", event.metadata)
 
     def test_new_customer_rejects_non_initial_client_version(self):
         payload = self.operation_payload(client_version=2)
@@ -354,6 +360,33 @@ class OfflineSyncApiTests(APITestCase):
         self.assertEqual(second.status_code, 200)
         self.assertEqual(Customer.objects.count(), 1)
         self.assertEqual(SyncOperationReceipt.objects.count(), 1)
+
+    def test_batch_idempotency_conflict_is_audited_without_payload(self):
+        operation = {
+            "operation_id": str(uuid.uuid4()), "operation_type": "customer_create",
+            "idempotency_key": str(uuid.uuid4()), "client_timestamp": timezone.now().isoformat(),
+            "client_version": 1,
+            "payload": {"id": str(uuid.uuid4()), "full_name": "Customer", "email": "audit-batch@example.test"},
+        }
+        batch = {"device_id": str(self.device.id), "operations": [operation]}
+        self.client.post(self.batch_url, batch, format="json")
+
+        changed = {
+            **operation,
+            "operation_id": str(uuid.uuid4()),
+            "payload": {**operation["payload"], "email": "changed-audit-batch@example.test"},
+        }
+        response = self.client.post(
+            self.batch_url,
+            {"device_id": str(self.device.id), "operations": [changed]},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["results"][0]["conflict_code"], "idempotency_mismatch")
+        event = AuditEvent.objects.filter(action="sync.operation_denied").latest("occurred_at")
+        self.assertEqual(event.resource_type, "customer")
+        self.assertNotIn("changed-audit-batch@example.test", event.metadata)
 
     def test_business_feed_only_contains_authenticated_seller_changes(self):
         product = Product.objects.create(

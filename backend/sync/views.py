@@ -10,6 +10,7 @@ from returns.serializers import ReturnReportCreateSerializer
 
 from accounts.models import Device
 from accounts.permissions import IsSeller
+from audit.models import AuditEvent
 
 from .models import SyncChange, SyncDeviceCursor, SyncOperationReceipt
 from .serializers import (
@@ -26,6 +27,19 @@ from .services import (
 class SyncConflictApiError(APIException):
     status_code = status.HTTP_409_CONFLICT
     default_detail = _("The idempotency key was used for a different synchronization operation.")
+
+
+def audit_sync_conflict(request, operation_id, entity_type, conflict_code):
+    AuditEvent.objects.create(
+        actor=request.user,
+        action="sync.operation_denied",
+        resource_type=entity_type,
+        resource_id=str(operation_id),
+        result=AuditEvent.Result.DENIED,
+        source="android",
+        correlation_id=request.correlation_id,
+        metadata={"status": SyncOperationReceipt.Status.CONFLICT, "conflict_code": conflict_code},
+    )
 
 
 def require_active_feed_device(request):
@@ -71,6 +85,12 @@ class SyncCustomerOperationView(generics.ListCreateAPIView):
                 correlation_id=request.correlation_id,
             )
         except SyncIdempotencyConflictError as error:
+            audit_sync_conflict(
+                request,
+                values["operation_id"],
+                "customer",
+                "idempotency_mismatch",
+            )
             raise SyncConflictApiError from error
         output = SyncReceiptSerializer(receipt)
         response_status = status.HTTP_201_CREATED if created else status.HTTP_200_OK
@@ -184,7 +204,7 @@ class SyncBatchView(generics.GenericAPIView):
                 )
                 return SyncReceiptSerializer(receipt).data
             except SyncIdempotencyConflictError:
-                return self.idempotency_conflict_result(operation)
+                return self.idempotency_conflict_result(request, operation)
         if operation["operation_type"] in ("payment_create", "return_create"):
             payload = {**payload, "device_id": str(device.id)}
         payload_serializer = payload_serializer_classes[operation["operation_type"]](data=payload)
@@ -196,7 +216,7 @@ class SyncBatchView(generics.GenericAPIView):
                 )
                 return SyncReceiptSerializer(receipt).data
             except SyncIdempotencyConflictError:
-                return self.idempotency_conflict_result(operation)
+                return self.idempotency_conflict_result(request, operation)
 
         values = payload_serializer.validated_data
         try:
@@ -249,10 +269,16 @@ class SyncBatchView(generics.GenericAPIView):
                 )
             return SyncReceiptSerializer(receipt).data
         except SyncIdempotencyConflictError:
-            return self.idempotency_conflict_result(operation)
+            return self.idempotency_conflict_result(request, operation)
 
     @staticmethod
-    def idempotency_conflict_result(operation):
+    def idempotency_conflict_result(request, operation):
+        audit_sync_conflict(
+            request,
+            operation["operation_id"],
+            operation["operation_type"].removesuffix("_create"),
+            "idempotency_mismatch",
+        )
         return {
             "operation_id": str(operation["operation_id"]),
             "entity_type": operation["operation_type"].removesuffix("_create"),
