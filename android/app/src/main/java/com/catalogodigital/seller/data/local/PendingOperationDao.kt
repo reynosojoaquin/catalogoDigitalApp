@@ -28,8 +28,8 @@ interface PendingOperationDao {
     @Query("UPDATE pending_operations SET status = :newStatus, attemptCount = attemptCount + 1, lastAttemptAtEpochMillis = :attemptedAt WHERE operationId IN (:ids) AND status = :expectedStatus")
     suspend fun updateForAttempt(ids: List<String>, expectedStatus: String, newStatus: String, attemptedAt: Long): Int
 
-    @Query("UPDATE pending_operations SET status = :status, conflictCode = :conflictCode WHERE operationId = :operationId")
-    suspend fun updateResult(operationId: String, status: String, conflictCode: String?)
+    @Query("UPDATE pending_operations SET status = :status, conflictCode = :conflictCode WHERE operationId = :operationId AND status = :expectedStatus")
+    suspend fun updateResult(operationId: String, status: String, conflictCode: String?, expectedStatus: String)
 
     @Query("UPDATE pending_operations SET status = :pendingStatus WHERE status = :inFlightStatus")
     suspend fun recoverInterrupted(inFlightStatus: String, pendingStatus: String)

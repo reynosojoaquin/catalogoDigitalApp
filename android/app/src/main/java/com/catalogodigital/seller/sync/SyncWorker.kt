@@ -71,7 +71,9 @@ class SyncWorker(context: Context, parameters: WorkerParameters) : CoroutineWork
             ) {
                 SyncFailureAction.AUTHENTICATION_REQUIRED -> {
                     if (SyncBatchRecoveryPolicy.shouldResetClaimedOperations(operationsReconciled)) {
-                        operations.forEach { dao.updateResult(it.operationId, OperationStatus.PENDING, null) }
+                        operations.forEach {
+                            dao.updateResult(it.operationId, OperationStatus.PENDING, null, OperationStatus.IN_FLIGHT)
+                        }
                     }
                     SessionStore(applicationContext).clearToken()
                     Result.failure()
@@ -79,14 +81,21 @@ class SyncWorker(context: Context, parameters: WorkerParameters) : CoroutineWork
                 SyncFailureAction.REJECT_BATCH -> {
                     if (SyncBatchRecoveryPolicy.shouldResetClaimedOperations(operationsReconciled)) {
                         operations.forEach {
-                            dao.updateResult(it.operationId, OperationStatus.REJECTED, "batch_rejected")
+                            dao.updateResult(
+                                it.operationId,
+                                OperationStatus.REJECTED,
+                                "batch_rejected",
+                                OperationStatus.IN_FLIGHT,
+                            )
                         }
                     }
                     Result.failure()
                 }
                 SyncFailureAction.RETRY -> {
                     if (SyncBatchRecoveryPolicy.shouldResetClaimedOperations(operationsReconciled)) {
-                        operations.forEach { dao.updateResult(it.operationId, OperationStatus.PENDING, null) }
+                        operations.forEach {
+                            dao.updateResult(it.operationId, OperationStatus.PENDING, null, OperationStatus.IN_FLIGHT)
+                        }
                     }
                     Result.retry()
                 }

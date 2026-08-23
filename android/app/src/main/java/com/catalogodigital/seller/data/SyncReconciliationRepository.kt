@@ -3,6 +3,7 @@ package com.catalogodigital.seller.data
 import androidx.room.withTransaction
 import com.catalogodigital.seller.data.local.CatalogDatabase
 import com.catalogodigital.seller.data.local.PendingOperation
+import com.catalogodigital.seller.data.local.OperationStatus
 import com.catalogodigital.seller.sync.OperationResult
 import com.catalogodigital.seller.sync.SyncReceiptPolicy
 
@@ -17,6 +18,7 @@ class SyncReconciliationRepository(private val database: CatalogDatabase) {
                     result.operationId,
                     result.status,
                     result.conflictCode,
+                    OperationStatus.IN_FLIGHT,
                 )
                 val entityId = result.entityId ?: operation.entityId
                 if (entityId != null) {
