@@ -27,6 +27,8 @@ docker compose -f compose.test.yaml down --volumes
 
 La base de datos de pruebas es efímera y no contiene información de ejemplo en el código de ejecución.
 
+Cada push y pull request ejecuta el workflow de GitHub Actions: valida Compose, prueba el backend con PostgreSQL/Redis, compila Android con lint y ejecuta las pruebas Room en un emulador API 35.
+
 ### Android
 
 La URL de la API se configura mediante `CATALOG_API_BASE_URL`; no se incorpora al código fuente. Para verificar la aplicación:

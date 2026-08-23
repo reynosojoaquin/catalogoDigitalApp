@@ -1,27 +1,53 @@
 # Android seller application
 
-Base offline-first para vendedores. La cola local conserva cada operación hasta recibir un resultado definitivo del servidor. Los payloads se cifran con una clave AES/GCM no exportable de Android Keystore y WorkManager reintenta solamente cuando existe conectividad.
+Aplicación offline-first para vendedores. La cola Room conserva cada operación hasta recibir un resultado definitivo del servidor. Los payloads y la sesión se cifran con Android Keystore; WorkManager reintenta únicamente cuando existe conectividad.
 
 ## Configuración local
 
-Se requiere JDK 17 y Android SDK 35. Define la URL sin incluir `/api` mediante una variable de entorno:
+Se requiere JDK 17 y Android SDK 35. Define la URL de la API sin incluir `/api` mediante una variable de entorno:
 
 ```powershell
 $env:CATALOG_API_BASE_URL = "https://your-api-host"
 ```
 
-También puede definirse `CATALOG_API_BASE_URL` en `android/local.properties`, que está excluido de Git. La aplicación rechaza tráfico HTTP, incluido en desarrollo; el backend local debe publicarse mediante un proxy HTTPS de confianza.
+También puede definirse `CATALOG_API_BASE_URL` en `android/local.properties`, que está excluido de Git. La aplicación rechaza tráfico HTTP. Nunca se incorporan credenciales a BuildConfig, recursos ni archivos versionados.
 
-El inicio de sesión obtiene el token mediante `/api/auth/token/` y registra un UUID persistente en `/api/devices/register/`. El token se guarda cifrado con Android Keystore y la contraseña se conserva solamente durante la solicitud; nunca deben incorporarse credenciales a BuildConfig, recursos ni archivos versionados.
-
-## Estado de esta fase
+## Capacidades verificadas
 
 - Cola Room durable con UUID, versión, fecha UTC, dispositivo e idempotency key.
-- Payload local cifrado y token de sesión cifrado.
-- Envío por lotes de hasta 50 operaciones a `/api/sync/batch/`.
-- Reintento con restricciones de red y recuperación de trabajo interrumpido.
-- Estados internos estables y resumen visible de pendientes, conflictos y rechazos.
+- Payload, token e identidad del vendedor cifrados.
+- Envío por lotes y recuperación de trabajo interrumpido.
+- Estados visibles de pendientes, conflictos y rechazos.
+- Protección de feeds mediante dispositivo activo.
+- Aislamiento de sesión y bloqueo de cambio de cuenta con operaciones no resueltas.
 - Recursos traducibles en español e inglés, con tema claro, oscuro y automático.
-- Inicio de sesión y registro idempotente del dispositivo sin credenciales embebidas.
+- Migraciones Room verificadas desde la versión 1 hasta la 8.
 
-La siguiente fase debe implementar las tablas locales de clientes, productos y pedidos antes de conectar las pantallas de captura.
+## Pruebas
+
+```powershell
+.\gradlew.bat testDebugUnitTest lintDebug assembleDebug assembleDebugAndroidTest
+```
+
+Con un emulador o dispositivo conectado, ejecutar además:
+
+```powershell
+.\gradlew.bat connectedDebugAndroidTest
+```
+
+## Artefactos release
+
+Las compilaciones de distribución reciben `ANDROID_VERSION_CODE` y `ANDROID_VERSION_NAME` desde el entorno. La firma se activa cuando se proporcionan `ANDROID_KEYSTORE_PATH`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` y `ANDROID_KEY_PASSWORD`; el keystore debe existir fuera del repositorio.
+
+```powershell
+$env:CATALOG_API_BASE_URL = "https://your-api-host"
+$env:ANDROID_VERSION_CODE = "1"
+$env:ANDROID_VERSION_NAME = "0.1.0"
+$env:ANDROID_KEYSTORE_PATH = "C:\secure\catalogo-release.jks"
+$env:ANDROID_KEYSTORE_PASSWORD = "<provided-outside-repository>"
+$env:ANDROID_KEY_ALIAS = "<provided-outside-repository>"
+$env:ANDROID_KEY_PASSWORD = "<provided-outside-repository>"
+.\gradlew.bat bundleRelease
+```
+
+No se deben guardar esos valores en `local.properties`, código, recursos ni archivos versionados.

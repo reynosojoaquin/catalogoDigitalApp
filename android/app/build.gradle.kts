@@ -21,6 +21,13 @@ fun configurationValue(name: String): String =
         ?: localProperties.getProperty(name)
         ?: ""
 
+val releaseKeystorePath = configurationValue("ANDROID_KEYSTORE_PATH")
+val releaseKeystorePassword = configurationValue("ANDROID_KEYSTORE_PASSWORD")
+val releaseKeyAlias = configurationValue("ANDROID_KEY_ALIAS")
+val releaseKeyPassword = configurationValue("ANDROID_KEY_PASSWORD")
+val releaseVersionCode = configurationValue("ANDROID_VERSION_CODE").toIntOrNull() ?: 1
+val releaseVersionName = configurationValue("ANDROID_VERSION_NAME").ifBlank { "0.1.0" }
+
 android {
     namespace = "com.catalogodigital.seller"
     compileSdk = 35
@@ -29,8 +36,8 @@ android {
         applicationId = "com.catalogodigital.seller"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = releaseVersionCode
+        versionName = releaseVersionName
 
         buildConfigField("String", "API_BASE_URL", "\"${configurationValue("CATALOG_API_BASE_URL")}\"")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -48,6 +55,29 @@ android {
     kotlinOptions { jvmTarget = "17" }
 
     sourceSets.getByName("androidTest").assets.srcDir("$projectDir/schemas")
+
+    if (releaseKeystorePath.isNotBlank()) {
+        signingConfigs {
+            create("release") {
+                storeFile = file(releaseKeystorePath)
+                storePassword = releaseKeystorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
+            signingConfig = signingConfigs.findByName("release")
+        }
+    }
 }
 
 dependencies {
