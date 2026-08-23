@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied
 from django.db.models import Sum
 import uuid
@@ -56,6 +57,11 @@ def dashboard(request):
 
 
 RESOURCE_CONFIG = {
+    "users": {
+        "title": _("Users"), "model": get_user_model(),
+        "search": ("username", "email"),
+        "columns": (("username", _("Username")), ("email", _("Email")), ("is_staff", _("Staff")), ("is_active", _("Status")), ("date_joined", _("Joined"))),
+    },
     "catalog": {
         "title": _("Catalog"), "model": Product,
         "search": ("sku", "name"),
@@ -168,6 +174,13 @@ def resource_detail(request, resource, pk):
             queryset = queryset.select_related(relation)
     item = get_object_or_404(queryset, pk=pk)
     fields = [{"label": label, "value": _value_for_column(item, field)} for field, label in config["columns"]]
+    related = None
+    if resource == "orders":
+        related = {"title": _("Order items"), "columns": (_("Product"), _("Quantity"), _("Unit price"), _("Line total")), "rows": [[row.product_name, row.quantity, row.unit_price, row.line_total] for row in item.items.all()]}
+    elif resource == "invoices":
+        related = {"title": _("Invoice items"), "columns": (_("Product"), _("Quantity"), _("Unit price"), _("Line total")), "rows": [[row.product_name, row.quantity, row.unit_price, row.line_total] for row in item.items.all()]}
+    elif resource == "returns":
+        related = {"title": _("Returned items"), "columns": (_("Product"), _("Quantity"), _("Unit price"), _("Line total")), "rows": [[row.invoice_item.product_name, row.quantity, row.unit_price, row.line_total] for row in item.items.select_related("invoice_item").all()]}
     action = None
     if resource == "orders" and item.status == Order.Status.SUBMITTED:
         action = {"label": _("Confirm complete delivery"), "key": "delivery"}
@@ -181,7 +194,7 @@ def resource_detail(request, resource, pk):
         action = {"label": _("Revoke device"), "key": "revoke_device"}
     return render(request, "dashboard/resource_detail.html", {
         "page_title": config["title"], "resource": resource, "item": item, "fields": fields,
-        "action": action, "action_idempotency_key": uuid.uuid4(),
+        "action": action, "action_idempotency_key": uuid.uuid4(), "related": related,
     })
 
 
