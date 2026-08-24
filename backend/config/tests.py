@@ -53,6 +53,16 @@ class DashboardTests(TestCase):
 
         self.assertEqual(self.client.get("/dashboard/").status_code, 403)
 
+    def test_language_switcher_uses_spanish_catalog(self):
+        user = get_user_model().objects.create_superuser(username="language-admin", password="A-secure-password-123")
+        self.client.force_login(user)
+        switch = self.client.post("/i18n/setlang/", {"language": "es-do", "next": "/dashboard/"})
+
+        self.assertEqual(switch.status_code, 302)
+        response = self.client.get("/dashboard/")
+
+        self.assertContains(response, "Panel principal")
+
     def test_custom_resource_view_renders_real_catalog_records_and_searches(self):
         user = get_user_model().objects.create_superuser(username="resource-admin", password="A-secure-password-123")
         Product.objects.create(sku="SKU-001", name="Visible product", price="10.00", commission_amount="1.00")

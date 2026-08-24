@@ -104,7 +104,7 @@ LANGUAGES = [("es-do", "Español (República Dominicana)"), ("en", "English")]
 TIME_ZONE = os.getenv("TIME_ZONE", "America/Santo_Domingo")
 USE_I18N = True
 USE_TZ = True
-LOCALE_PATHS = [BASE_DIR / "locale"]
+LOCALE_PATHS = [Path(os.getenv("DJANGO_RUNTIME_LOCALE_PATH", BASE_DIR / "locale")), BASE_DIR / "locale"]
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
